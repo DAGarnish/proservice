@@ -40,7 +40,7 @@ function HeroSection() {
             <span className={styles.heroAccent}>for Your Business</span>
           </h1>
           <p className={styles.heroSubtitle}>
-            Fill out one simple form. We build your website. Only pay{' '}
+            Fill out one simple form. We build your search engine optimised website. Only pay{' '}
             <strong>$50/month</strong> if you like it. Hosting included.
           </p>
           <div className={styles.heroCTAs}>
@@ -86,10 +86,12 @@ function HeroSection() {
           <div className={styles.heroVisual}>
             <div className={styles.mockBrowser}>
               <div className={styles.mockBrowserBar}>
-                <span className={styles.mockDot} style={{ background: '#ef4444' }} />
-                <span className={styles.mockDot} style={{ background: '#f59e0b' }} />
-                <span className={styles.mockDot} style={{ background: '#22c55e' }} />
-                <span className={styles.mockUrl}>yourbusiness.com</span>
+                <div className={styles.mockDots}>
+                  <span className={styles.mockDot} style={{ background: '#ef4444' }} />
+                </div>
+                <div className={styles.mockUrlBar}>
+                  <span className={styles.mockUrlText}>yourbusiness.com</span>
+                </div>
               </div>
               <div className={styles.mockBrowserContent}>
                 <div className={styles.mockHeroBlock} />
@@ -223,7 +225,7 @@ function PricingSection() {
                   <span className={styles.addOnPrice}>$50 URL consultation and setup</span>
                 </div>
               </div>
-              <p>Get your own domain name like <strong>johncolemanplumbing.com</strong> instead of a subdirectory. Looks more professional and helps with Google rankings.</p>
+              <p>Get your own domain name like <strong>johnsmithhvac.com</strong> instead of <strong>webpro50.com/johnsmithhvac</strong>. Looks more professional and is better for Google rankings.</p>
             </div>
           </div>
         </div>
