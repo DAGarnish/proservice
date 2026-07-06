@@ -63,7 +63,7 @@ function getTestimonials(brief: StructuredBrief): Array<{ name: string; text: st
   return [
     {
       name: 'Sarah M.',
-      text: `Absolutely fantastic service! ${brief.business_name} were professional, prompt, and the quality of work was outstanding. Would highly recommend to anyone in ${brief.main_city || 'the area'}.`,
+      text: `Absolutely fantastic service! ${brief.business_name} were professional, prompt, and the quality of work was outstanding. Would highly recommend to anyone in ${brief.service_area || brief.seo_locations.split(';')[0] || 'the area'}.`,
       rating: 5,
     },
     {

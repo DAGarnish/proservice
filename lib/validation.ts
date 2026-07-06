@@ -17,7 +17,7 @@ function isValidPhone(phone: string): boolean {
   return digits.length >= 10;
 }
 
-export function validateStep1(data: Record<string, unknown>): StepErrors {
+export function validateStep1(data: any): StepErrors {
   const errors: StepErrors = {};
 
   if (!String(data.business_name || '').trim()) {
@@ -43,7 +43,7 @@ export function validateStep1(data: Record<string, unknown>): StepErrors {
   return errors;
 }
 
-export function validateStep2(data: Record<string, unknown>): StepErrors {
+export function validateStep2(data: any): StepErrors {
   const errors: StepErrors = {};
 
   if (!String(data.main_services || '').trim()) {
@@ -56,12 +56,12 @@ export function validateStep2(data: Record<string, unknown>): StepErrors {
   return errors;
 }
 
-export function validateStep3(_data: Record<string, unknown>): StepErrors {
+export function validateStep3(_data: any): StepErrors {
   // Step 3 is optional — differentiator and testimonials are strongly encouraged but not required
   return {};
 }
 
-export function validateStep4(data: Record<string, unknown>): StepErrors {
+export function validateStep4(data: any): StepErrors {
   const errors: StepErrors = {};
 
   if (!String(data.selected_website_look || '').trim()) {
@@ -71,7 +71,7 @@ export function validateStep4(data: Record<string, unknown>): StepErrors {
   return errors;
 }
 
-export function validateStep5(data: Record<string, unknown>): StepErrors {
+export function validateStep5(data: any): StepErrors {
   const errors: StepErrors = {};
 
   if (!String(data.main_city || '').trim()) {
@@ -81,7 +81,7 @@ export function validateStep5(data: Record<string, unknown>): StepErrors {
   return errors;
 }
 
-export function validateStep6(data: Record<string, unknown>): StepErrors {
+export function validateStep6(data: any): StepErrors {
   const errors: StepErrors = {};
 
   if (!String(data.contact_number_to_show || '').trim() && !String(data.phone_number || '').trim()) {
@@ -91,12 +91,12 @@ export function validateStep6(data: Record<string, unknown>): StepErrors {
   return errors;
 }
 
-export function validateStep7(_data: Record<string, unknown>): StepErrors {
+export function validateStep7(_data: any): StepErrors {
   // Step 7 is fully optional
   return {};
 }
 
-export function validateStepByIndex(stepIndex: number, data: Record<string, unknown>): StepErrors {
+export function validateStepByIndex(stepIndex: number, data: any): StepErrors {
   switch (stepIndex) {
     case 0: return validateStep1(data);
     case 1: return validateStep2(data);

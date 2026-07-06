@@ -168,7 +168,7 @@ export default function PreviewPage() {
                            </div>
                         )}
                         <h1 className={styles.mockHeroTitle}>
-                           Expert {brief.occupation} in {brief.main_city || brief.service_area}
+                           Expert {brief.occupation} in {brief.service_area || brief.seo_locations.split(';')[0]}
                         </h1>
                         <p className={styles.mockHeroSub}>
                            Professional, reliable, and affordable {brief.occupation.toLowerCase()} services. 

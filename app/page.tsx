@@ -6,7 +6,7 @@ import {
   ArrowRight, CheckCircle2, Zap, FileText, Eye, Globe, Star,
   ShieldCheck, Phone, DollarSign, ChevronDown, Wrench, Paintbrush,
   Droplets, Leaf, Scissors, Car, BookOpen, Calculator, Hammer,
-  Plug, Wind, Home, Sparkles
+  Plug, Wind, Home, Sparkles, Truck, Key, Camera
 } from 'lucide-react';
 import styles from './page.module.css';
 
@@ -229,6 +229,9 @@ function IndustriesSection() {
     { icon: <Car size={22} />, name: 'Auto Repair' },
     { icon: <BookOpen size={22} />, name: 'Tutors' },
     { icon: <Calculator size={22} />, name: 'Accountants' },
+    { icon: <Truck size={22} />, name: 'Movers' },
+    { icon: <Key size={22} />, name: 'Locksmiths' },
+    { icon: <Camera size={22} />, name: 'Photographers' },
   ];
 
   return (
