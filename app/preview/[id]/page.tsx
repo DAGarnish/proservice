@@ -137,7 +137,7 @@ export default function PreviewPage() {
                   <div className={styles.browserDot} style={{ background: '#22c55e' }} />
                </div>
                <div className={styles.browserUrl}>
-                  {brief.business_name.toLowerCase().replace(/[^a-z0-9]/g, '')}.proservice.website
+                  {brief.business_name.toLowerCase().replace(/[^a-z0-9]/g, '')}.webpro50.com
                </div>
             </div>
             

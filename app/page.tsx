@@ -324,7 +324,7 @@ function FAQSection() {
     },
     {
       q: 'Do I need a domain name?',
-      a: 'No — we can host your site on a PROSERVICE subdirectory for free. But if you want your own branded domain (like johncolemanplumbing.com), we offer that as an add-on for $50 URL consultation and setup.',
+      a: 'No — we can host your site on a WEBPRO50 subdirectory for free. But if you want your own branded domain (like johnsmithhvac.com), we offer that as an add-on for $50 URL consultation and setup.',
     },
     {
       q: 'What\'s included in the Google listing setup?',

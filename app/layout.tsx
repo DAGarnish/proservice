@@ -3,12 +3,12 @@ import Link from 'next/link';
 import './globals.css';
 
 export const metadata: Metadata = {
-  title: 'PROSERVICE — Get Your Business Website in Minutes',
+  title: 'WEBPRO50 — Get Your Business Website in Minutes',
   description:
     'Fill out one simple form and get a professional website preview for your small business. Only $50/month if you like it. Hosting included. No tech skills needed.',
   keywords: 'small business website, local business website, affordable website, website builder, plumber website, electrician website',
   openGraph: {
-    title: 'PROSERVICE — Get Your Business Website in Minutes',
+    title: 'WEBPRO50 — Get Your Business Website in Minutes',
     description: 'Fill out one simple form. We build your website. Only $50/month if you like it.',
     type: 'website',
   },
@@ -51,7 +51,7 @@ function Navbar() {
             color: 'var(--color-primary)',
             letterSpacing: '-0.02em',
           }}>
-            PRO<span style={{ color: 'var(--color-gray-900)' }}>SERVICE</span>
+            WEB<span style={{ color: 'var(--color-gray-900)' }}>PRO50</span>
           </span>
         </Link>
 
@@ -108,7 +108,7 @@ function Footer() {
               color: 'var(--color-white)',
               marginBottom: 'var(--space-3)',
             }}>
-              PRO<span style={{ color: 'var(--color-primary)' }}>SERVICE</span>
+              WEB<span style={{ color: 'var(--color-primary)' }}>PRO50</span>
             </div>
             <p style={{ fontSize: 'var(--text-sm)', lineHeight: 1.7, maxWidth: 260 }}>
               Professional websites for local service businesses. No tech skills needed.
@@ -165,7 +165,7 @@ function Footer() {
           gap: 'var(--space-4)',
           fontSize: 'var(--text-xs)',
         }}>
-          <span>© {new Date().getFullYear()} PROSERVICE. All rights reserved.</span>
+          <span>© {new Date().getFullYear()} WEBPRO50. All rights reserved.</span>
           <div style={{ display: 'flex', gap: 'var(--space-6)' }}>
             <a href="#" style={{ color: 'var(--color-gray-500)', textDecoration: 'none' }}>Privacy Policy</a>
             <a href="#" style={{ color: 'var(--color-gray-500)', textDecoration: 'none' }}>Terms of Service</a>
