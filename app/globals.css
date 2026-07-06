@@ -524,6 +524,7 @@ input, textarea, select {
   h3 { font-size: var(--text-xl); }
   .section { padding: var(--space-16) 0; }
   .container { padding: 0 var(--space-4); }
+  .hide-on-mobile { display: none !important; }
 }
 
 @media (max-width: 480px) {

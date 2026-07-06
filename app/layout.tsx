@@ -56,7 +56,7 @@ function Navbar() {
         </Link>
 
         <div style={{ display: 'flex', alignItems: 'center', gap: 'var(--space-6)' }}>
-          <nav style={{ display: 'flex', gap: 'var(--space-6)', alignItems: 'center' }}>
+          <nav className="hide-on-mobile" style={{ display: 'flex', gap: 'var(--space-6)', alignItems: 'center' }}>
             <a href="/#how-it-works" style={{
               fontSize: 'var(--text-sm)',
               fontWeight: 500,
