@@ -615,7 +615,7 @@ function Step7AddOns({ data, update, errors }: any) {
             <span className="form-checkbox-label">
                <strong style={{ display: 'block', marginBottom: '4px' }}>Branded Custom Domain</strong>
                Get a professional domain like <em>johncolemanplumbing.com</em>. Helps significantly with Google rankings. 
-               <br/><span style={{ color: 'var(--color-primary)', fontWeight: 600, fontSize: '0.85em', display: 'block', marginTop: '4px' }}>$50 setup + $5/month</span>
+               <br/><span style={{ color: 'var(--color-primary)', fontWeight: 600, fontSize: '0.85em', display: 'block', marginTop: '4px' }}>$50 URL consultation and setup</span>
             </span>
          </label>
       </div>

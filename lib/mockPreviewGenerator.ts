@@ -26,9 +26,7 @@ function calculateMonthly(brief: StructuredBrief): { monthlyTotal: number; addOn
     addOns.push('Google listing setup/optimisation — $50 one-time');
   }
   if (brief.branded_domain_option) {
-    monthlyTotal += 5;
-    addOns.push('Branded domain management — $5/month');
-    addOns.push('Domain consultation & setup — $50 one-time');
+    addOns.push('URL consultation and setup — $50 one-time');
   }
 
   return { monthlyTotal, addOns };

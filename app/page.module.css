@@ -7,11 +7,14 @@
   overflow: hidden;
 }
 
-.hero .container {
+.heroContainer {
   display: grid;
   grid-template-columns: 1fr 1fr;
-  gap: var(--space-16);
+  gap: var(--space-8);
   align-items: center;
+  max-width: 1400px;
+  margin: 0 auto;
+  padding: 0 var(--space-6);
 }
 
 .heroContent {
@@ -506,7 +509,7 @@
     padding: var(--space-16) 0 var(--space-12);
   }
 
-  .hero .container {
+  .heroContainer {
     grid-template-columns: 1fr;
     gap: var(--space-10);
     text-align: center;

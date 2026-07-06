@@ -28,7 +28,7 @@ export default function HomePage() {
 function HeroSection() {
   return (
     <section className={styles.hero}>
-      <div className="container">
+      <div className={styles.heroContainer}>
         <div className={styles.heroContent}>
           <div className={styles.heroBadge}>
             <Sparkles size={14} />
@@ -66,25 +66,43 @@ function HeroSection() {
             </div>
           </div>
         </div>
-        <div className={styles.heroVisual}>
-          <div className={styles.mockBrowser}>
-            <div className={styles.mockBrowserBar}>
-              <span className={styles.mockDot} style={{ background: '#ef4444' }} />
-              <span className={styles.mockDot} style={{ background: '#f59e0b' }} />
-              <span className={styles.mockDot} style={{ background: '#22c55e' }} />
-              <span className={styles.mockUrl}>yourbusiness.com</span>
-            </div>
-            <div className={styles.mockBrowserContent}>
-              <div className={styles.mockHeroBlock} />
-              <div className={styles.mockTextLines}>
-                <div className={styles.mockLine} style={{ width: '80%' }} />
-                <div className={styles.mockLine} style={{ width: '60%' }} />
-                <div className={styles.mockLine} style={{ width: '90%' }} />
+        <div className={styles.heroRightColumn} style={{ display: 'flex', flexDirection: 'column', gap: 'var(--space-8)' }}>
+          <div className={styles.heroCTAbox}>
+            <div style={{ textAlign: 'center', backgroundColor: 'var(--color-white)', padding: 'var(--space-10) var(--space-8)', borderRadius: 'var(--radius-xl)', boxShadow: 'var(--shadow-xl)', border: '1px solid var(--color-gray-200)' }}>
+              <ShieldCheck size={40} color="var(--color-primary)" style={{ margin: '0 auto var(--space-4)' }} />
+              <h2 style={{ fontSize: 'var(--text-xl)', fontWeight: 800, color: 'var(--color-gray-900)', marginBottom: 'var(--space-4)', lineHeight: 1.3 }}>
+                Your Customers Are Searching Online.<br />Let Them Find You.
+              </h2>
+              <p style={{ color: 'var(--color-gray-600)', fontSize: '1rem', marginBottom: 'var(--space-8)', lineHeight: 1.6 }}>
+                Stop losing work to competitors with websites. Get yours in minutes — not weeks.
+              </p>
+              <div style={{ display: 'flex', gap: 'var(--space-4)', justifyContent: 'center', flexWrap: 'wrap' }}>
+                <Link href="/get-started" className="btn btn-primary btn-sm">
+                  Start My Website <ArrowRight size={16} />
+                </Link>
               </div>
-              <div className={styles.mockCardRow}>
-                <div className={styles.mockCard} />
-                <div className={styles.mockCard} />
-                <div className={styles.mockCard} />
+            </div>
+          </div>
+          <div className={styles.heroVisual}>
+            <div className={styles.mockBrowser}>
+              <div className={styles.mockBrowserBar}>
+                <span className={styles.mockDot} style={{ background: '#ef4444' }} />
+                <span className={styles.mockDot} style={{ background: '#f59e0b' }} />
+                <span className={styles.mockDot} style={{ background: '#22c55e' }} />
+                <span className={styles.mockUrl}>yourbusiness.com</span>
+              </div>
+              <div className={styles.mockBrowserContent}>
+                <div className={styles.mockHeroBlock} />
+                <div className={styles.mockTextLines}>
+                  <div className={styles.mockLine} style={{ width: '80%' }} />
+                  <div className={styles.mockLine} style={{ width: '60%' }} />
+                  <div className={styles.mockLine} style={{ width: '90%' }} />
+                </div>
+                <div className={styles.mockCardRow}>
+                  <div className={styles.mockCard} />
+                  <div className={styles.mockCard} />
+                  <div className={styles.mockCard} />
+                </div>
               </div>
             </div>
           </div>
@@ -202,7 +220,7 @@ function PricingSection() {
                 <Globe size={20} color="var(--color-primary)" />
                 <div>
                   <strong>Branded Domain</strong>
-                  <span className={styles.addOnPrice}>$50 setup + $5/month</span>
+                  <span className={styles.addOnPrice}>$50 URL consultation and setup</span>
                 </div>
               </div>
               <p>Get your own domain name like <strong>johncolemanplumbing.com</strong> instead of a subdirectory. Looks more professional and helps with Google rankings.</p>
@@ -292,7 +310,7 @@ function FAQSection() {
     },
     {
       q: 'Is the $50/month really all I pay?',
-      a: 'Yes — $50/month covers your website and hosting. The only optional extras are the Google listing setup ($50 one-time) and a branded domain ($50 setup + $5/month).',
+      a: 'Yes — $50/month covers your website and hosting. The only optional extras are the Google listing setup ($50 one-time) and a branded domain ($50 URL consultation and setup).',
     },
     {
       q: 'Can I cancel anytime?',
@@ -304,7 +322,7 @@ function FAQSection() {
     },
     {
       q: 'Do I need a domain name?',
-      a: 'No — we can host your site on a PROSERVICE subdirectory for free. But if you want your own branded domain (like johncolemanplumbing.com), we offer that as an add-on for $50 setup + $5/month.',
+      a: 'No — we can host your site on a PROSERVICE subdirectory for free. But if you want your own branded domain (like johncolemanplumbing.com), we offer that as an add-on for $50 URL consultation and setup.',
     },
     {
       q: 'What\'s included in the Google listing setup?',
