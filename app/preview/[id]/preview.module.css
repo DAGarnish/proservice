@@ -1,0 +1,339 @@
+/* app/preview/[id]/preview.module.css */
+
+.pageContainer {
+  background: var(--color-gray-100);
+  min-height: calc(100vh - var(--nav-height));
+  padding-bottom: var(--space-20);
+}
+
+.loadingContainer {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  height: calc(100vh - var(--nav-height));
+  background: var(--color-gray-50);
+  text-align: center;
+}
+
+.spinner {
+  width: 48px;
+  height: 48px;
+  border: 4px solid var(--color-primary-light);
+  border-top-color: var(--color-primary);
+  border-radius: 50%;
+  animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+  to { transform: rotate(360deg); }
+}
+
+.actionBar {
+  background: var(--color-white);
+  padding: var(--space-4) 0;
+  border-bottom: 1px solid var(--color-gray-200);
+  position: sticky;
+  top: var(--nav-height);
+  z-index: 90;
+  box-shadow: var(--shadow-sm);
+}
+
+.previewFrameWrapper {
+  flex: 1;
+  background: var(--color-white);
+  border-radius: var(--radius-xl);
+  overflow: hidden;
+  box-shadow: var(--shadow-xl);
+  border: 1px solid var(--color-gray-300);
+  display: flex;
+  flex-direction: column;
+}
+
+.browserHeader {
+  height: 40px;
+  background: var(--color-gray-100);
+  border-bottom: 1px solid var(--color-gray-200);
+  display: flex;
+  align-items: center;
+  padding: 0 var(--space-4);
+  gap: var(--space-4);
+}
+
+.browserDots {
+  display: flex;
+  gap: 6px;
+}
+
+.browserDot {
+  width: 12px;
+  height: 12px;
+  border-radius: 50%;
+}
+
+.browserUrl {
+  background: var(--color-white);
+  padding: 2px 12px;
+  border-radius: var(--radius-sm);
+  font-size: 12px;
+  color: var(--color-gray-500);
+  flex: 1;
+  max-width: 400px;
+  text-align: center;
+}
+
+.previewCanvas {
+  flex: 1;
+  background: white;
+  overflow-y: auto;
+  height: 800px; /* fixed height to scroll within frame */
+}
+
+.sidebar {
+  width: 320px;
+  flex-shrink: 0;
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-6);
+}
+
+.summaryCard, .infoCard {
+  background: var(--color-white);
+  border-radius: var(--radius-lg);
+  padding: var(--space-6);
+  border: 1px solid var(--color-gray-200);
+  box-shadow: var(--shadow-sm);
+}
+
+.summaryRow {
+  display: flex;
+  justify-content: space-between;
+  margin-bottom: var(--space-3);
+  padding-bottom: var(--space-3);
+  border-bottom: 1px solid var(--color-gray-100);
+}
+
+.summaryTotal {
+  display: flex;
+  justify-content: space-between;
+  margin-top: var(--space-4);
+  font-size: var(--text-lg);
+  font-weight: 700;
+}
+
+/* --- MOCKUP STYLES (Scoped to canvas) --- */
+.mockHeader {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 1rem 2rem;
+  border-bottom: 1px solid rgba(0,0,0,0.05);
+}
+
+.mockLogo {
+  font-size: 1.25rem;
+  font-weight: 800;
+  color: var(--theme-primary);
+}
+
+.mockNav {
+  display: flex;
+  gap: 1.5rem;
+  font-size: 0.875rem;
+  font-weight: 500;
+  color: var(--color-gray-600);
+}
+
+.mockBtnPrimary {
+  padding: 0.5rem 1rem;
+  color: white;
+  border: none;
+  border-radius: 4px;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.mockBtnAccent {
+  padding: 0.75rem 1.5rem;
+  color: white;
+  border: none;
+  border-radius: 4px;
+  font-weight: 600;
+  font-size: 1rem;
+  cursor: pointer;
+}
+
+.mockBtnOutline {
+  padding: 0.75rem 1.5rem;
+  color: white;
+  background: transparent;
+  border: 2px solid white;
+  border-radius: 4px;
+  font-weight: 600;
+  font-size: 1rem;
+  cursor: pointer;
+}
+
+.mockHero {
+  padding: 4rem 2rem;
+  color: white;
+}
+
+.mockHeroContent {
+  max-width: 600px;
+}
+
+.mockEmergencyBadge {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  background: rgba(255,255,255,0.2);
+  padding: 0.25rem 0.75rem;
+  border-radius: 20px;
+  font-size: 0.875rem;
+  font-weight: 600;
+  margin-bottom: 1.5rem;
+}
+
+.mockHeroTitle {
+  font-size: 3rem;
+  font-weight: 800;
+  line-height: 1.1;
+  margin-bottom: 1rem;
+  color: white;
+}
+
+.mockHeroSub {
+  font-size: 1.25rem;
+  opacity: 0.9;
+}
+
+.mockTrustStrip {
+  display: flex;
+  justify-content: space-around;
+  padding: 1.5rem;
+}
+
+.mockTrustItem {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  font-weight: 600;
+  color: var(--theme-primary);
+}
+
+.mockSection {
+  padding: 4rem 2rem;
+}
+
+.mockSectionHeader {
+  text-align: center;
+  margin-bottom: 3rem;
+}
+
+.mockSectionTitle {
+  font-size: 2rem;
+  color: var(--color-gray-900);
+}
+
+.mockSectionDivider {
+  width: 60px;
+  height: 4px;
+  margin: 1rem auto 0;
+  border-radius: 2px;
+}
+
+.mockServicesGrid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 2rem;
+}
+
+.mockServiceCard {
+  background: white;
+  padding: 2rem;
+  border-radius: 8px;
+  box-shadow: 0 4px 6px rgba(0,0,0,0.05);
+  border: 1px solid var(--color-gray-100);
+  text-align: center;
+}
+
+.mockServiceIcon {
+  width: 48px;
+  height: 48px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin: 0 auto 1rem;
+}
+
+.mockServiceCard h3 {
+  margin-bottom: 0.5rem;
+  font-size: 1.25rem;
+}
+
+.mockServiceCard p {
+  color: var(--color-gray-600);
+  font-size: 0.875rem;
+}
+
+.mockSplitSection {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 4rem;
+  align-items: center;
+}
+
+.mockBulletList {
+  list-style: none;
+  padding: 0;
+}
+
+.mockBulletList li {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  margin-bottom: 1rem;
+  font-size: 1.125rem;
+  color: var(--color-gray-800);
+}
+
+.mockImagePlaceholder {
+  height: 400px;
+  border-radius: 8px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 600;
+}
+
+.mockTestimonialsGrid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 1.5rem;
+}
+
+.mockTestimonialCard {
+  background: white;
+  padding: 1.5rem;
+  border-radius: 8px;
+  border: 1px solid var(--color-gray-200);
+  font-style: italic;
+}
+
+.mockFooterGrid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 2rem;
+  padding: 3rem 2rem;
+}
+
+@media (max-width: 1024px) {
+  .container {
+    flex-direction: column;
+  }
+  .sidebar {
+    width: 100%;
+  }
+}

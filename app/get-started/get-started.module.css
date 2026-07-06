@@ -1,0 +1,136 @@
+/* app/get-started/get-started.module.css */
+
+.pageContainer {
+  background: var(--color-gray-50);
+  min-height: calc(100vh - var(--nav-height));
+  padding: var(--space-12) 0 var(--space-20);
+}
+
+.stepperHeader {
+  max-width: 680px;
+  margin: 0 auto var(--space-8);
+}
+
+.progressBarContainer {
+  height: 8px;
+  background: var(--color-gray-200);
+  border-radius: var(--radius-full);
+  overflow: hidden;
+  margin-bottom: var(--space-3);
+}
+
+.progressBarFill {
+  height: 100%;
+  background: var(--color-primary);
+  border-radius: var(--radius-full);
+  transition: width 0.4s ease;
+}
+
+.stepIndicator {
+  font-size: var(--text-sm);
+  font-weight: 600;
+  color: var(--color-gray-600);
+  text-align: center;
+}
+
+.formContainer {
+  background: var(--color-white);
+  border: 1px solid var(--color-gray-200);
+  border-radius: var(--radius-xl);
+  padding: var(--space-10);
+  max-width: 680px;
+  margin: 0 auto;
+  box-shadow: var(--shadow-sm);
+}
+
+.stepContent h2 {
+  margin-bottom: var(--space-2);
+}
+
+.grid2 {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: var(--space-4);
+  margin-bottom: var(--space-4);
+}
+
+/* Look Selector */
+.lookSelectorGrid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: var(--space-4);
+}
+
+.lookCard {
+  border: 2px solid var(--color-gray-200);
+  border-radius: var(--radius-lg);
+  padding: var(--space-4);
+  cursor: pointer;
+  transition: all var(--transition-base);
+  background: var(--color-white);
+}
+
+.lookCard:hover {
+  border-color: var(--color-gray-400);
+}
+
+.lookCardSelected {
+  border-color: var(--color-primary);
+  background: var(--color-primary-light);
+  box-shadow: 0 0 0 1px var(--color-primary);
+}
+
+.lookColors {
+  display: flex;
+  gap: 4px;
+  margin-bottom: var(--space-3);
+}
+
+.lookColorSwatch {
+  width: 24px;
+  height: 24px;
+  border-radius: 50%;
+  border: 1px solid rgba(0,0,0,0.1);
+}
+
+.lookName {
+  font-weight: 600;
+  font-size: var(--text-base);
+  margin-bottom: var(--space-1);
+}
+
+.lookDesc {
+  font-size: var(--text-xs);
+  color: var(--color-gray-600);
+  line-height: 1.4;
+}
+
+/* Add ons */
+.addOnBox {
+  border: 1.5px solid var(--color-gray-200);
+  border-radius: var(--radius-lg);
+  padding: var(--space-5);
+  background: var(--color-white);
+}
+
+.navButtons {
+  display: flex;
+  justify-content: space-between;
+  margin-top: var(--space-10);
+  padding-top: var(--space-6);
+  border-top: 1px solid var(--color-gray-200);
+}
+
+@media (max-width: 640px) {
+  .formContainer {
+    padding: var(--space-6);
+  }
+  
+  .grid2 {
+    grid-template-columns: 1fr;
+  }
+  
+  .lookSelectorGrid {
+    grid-template-columns: 1fr;
+  }
+}
