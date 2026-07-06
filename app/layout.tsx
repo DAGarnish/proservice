@@ -149,6 +149,7 @@ function Footer() {
             </div>
             <div style={{ fontSize: 'var(--text-sm)', display: 'flex', flexDirection: 'column', gap: 'var(--space-2)' }}>
               <span>$50/month — Website + hosting</span>
+              <span style={{ marginTop: 'var(--space-2)', color: 'var(--color-gray-500)', fontWeight: 500 }}>Optional:</span>
               <span>$50 one-time — Google listing setup</span>
               <span>$50 one-time — URL consultation and setup</span>
             </div>
