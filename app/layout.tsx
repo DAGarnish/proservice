@@ -1,6 +1,7 @@
 import type { Metadata } from 'next';
 import Link from 'next/link';
 import './globals.css';
+import { ToastProvider } from './ToastProvider';
 
 export const metadata: Metadata = {
   title: 'WEBPRO50 — Get Your Business Website in Minutes',
@@ -21,6 +22,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
         <Navbar />
         <main>{children}</main>
         <Footer />
+        <ToastProvider />
       </body>
     </html>
   );

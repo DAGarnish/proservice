@@ -7,6 +7,7 @@ import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { defaultFormData, FormData, WebsiteLookId } from '@/types/form';
 import { validateStepByIndex, hasErrors, StepErrors } from '@/lib/validation';
+import { toast } from 'react-toastify';
 import styles from './get-started.module.css';
 
 const TOTAL_STEPS = 7;
@@ -62,6 +63,8 @@ export default function GetStartedPage() {
     setIsSubmitting(true);
     setSubmitError('');
 
+    const toastId = toast.loading('Submitting your preferences and saving to database...');
+
     try {
       const response = await fetch('/api/generate-preview', {
         method: 'POST',
@@ -75,6 +78,13 @@ export default function GetStartedPage() {
         throw new Error(data.error || 'Failed to generate preview');
       }
 
+      toast.update(toastId, {
+        render: '🎉 Successfully submitted! Redirecting to your website preview...',
+        type: 'success',
+        isLoading: false,
+        autoClose: 2500,
+      });
+
       // Redirect to preview screen
       if (data.previewId) {
          router.push(`/preview/${data.previewId}`);
@@ -83,7 +93,14 @@ export default function GetStartedPage() {
       }
       
     } catch (err: any) {
-      setSubmitError(err.message || 'An unexpected error occurred.');
+      const errorMessage = err.message || 'An unexpected error occurred.';
+      setSubmitError(errorMessage);
+      toast.update(toastId, {
+        render: `❌ Error: ${errorMessage}`,
+        type: 'error',
+        isLoading: false,
+        autoClose: 4000,
+      });
       setIsSubmitting(false);
     }
   };

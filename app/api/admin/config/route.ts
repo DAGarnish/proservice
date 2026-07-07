@@ -4,9 +4,9 @@
 import { NextRequest, NextResponse } from 'next/server';
 
 function isAuthorized(req: NextRequest): boolean {
-  const adminSecret = process.env.ADMIN_SECRET;
+  const adminSecret = process.env.ADMIN_PASSWORD || process.env.ADMIN_SECRET;
   if (!adminSecret) return true;
-  const authHeader = req.headers.get('x-admin-secret');
+  const authHeader = req.headers.get('x-admin-secret') || req.headers.get('x-admin-password');
   return authHeader === adminSecret;
 }
 

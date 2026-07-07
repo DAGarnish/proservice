@@ -531,3 +531,85 @@ input, textarea, select {
   h1 { font-size: var(--text-2xl); }
   .btn-lg { padding: 0.875rem 1.5rem; font-size: var(--text-base); }
 }
+
+/* ---- Toastify Custom Branding ---- */
+:root {
+  --toastify-font-family: var(--font-body);
+  --toastify-toast-radius: var(--radius-lg);
+  --toastify-toast-shadow: var(--shadow-xl);
+}
+
+.Toastify__toast {
+  border: 1.5px solid var(--color-gray-200);
+  border-radius: var(--radius-lg) !important;
+  box-shadow: var(--shadow-xl) !important;
+  font-family: var(--font-body) !important;
+  font-size: var(--text-sm) !important;
+  font-weight: 500 !important;
+  padding: var(--space-4) !important;
+  line-height: 1.5 !important;
+}
+
+/* Default / Loading / Info Toast */
+.Toastify__toast--default,
+.Toastify__toast--info {
+  background: var(--color-primary-light) !important;
+  border-color: #bfdbfe !important;
+  color: var(--color-primary-dark) !important;
+}
+.Toastify__toast--default .Toastify__progress-bar,
+.Toastify__toast--info .Toastify__progress-bar {
+  background: var(--color-primary) !important;
+}
+.Toastify__spinner {
+  border-color: var(--color-primary-light) !important;
+  border-top-color: var(--color-primary) !important;
+}
+
+/* Success Toast */
+.Toastify__toast--success {
+  background: var(--color-success-light) !important;
+  border-color: #86efac !important;
+  color: #166534 !important;
+}
+.Toastify__toast--success .Toastify__progress-bar {
+  background: var(--color-success) !important;
+}
+.Toastify__toast--success .Toastify__toast-icon svg {
+  fill: var(--color-success) !important;
+}
+
+/* Error Toast */
+.Toastify__toast--error {
+  background: var(--color-error-light) !important;
+  border-color: #fca5a5 !important;
+  color: #991b1b !important;
+}
+.Toastify__toast--error .Toastify__progress-bar {
+  background: var(--color-error) !important;
+}
+.Toastify__toast--error .Toastify__toast-icon svg {
+  fill: var(--color-error) !important;
+}
+
+/* Warning Toast */
+.Toastify__toast--warning {
+  background: var(--color-warning-light) !important;
+  border-color: #fcd34d !important;
+  color: #92400e !important;
+}
+.Toastify__toast--warning .Toastify__progress-bar {
+  background: var(--color-warning) !important;
+}
+.Toastify__toast--warning .Toastify__toast-icon svg {
+  fill: var(--color-warning) !important;
+}
+
+.Toastify__close-button {
+  color: inherit !important;
+  opacity: 0.6 !important;
+}
+.Toastify__close-button:hover {
+  opacity: 1 !important;
+}
+

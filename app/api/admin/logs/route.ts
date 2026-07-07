@@ -8,10 +8,10 @@ import { getRateLimitStats } from '@/lib/rateLimiter';
 
 function isAuthorized(req: NextRequest): boolean {
   // Placeholder auth check — replace with proper NextAuth or API key check
-  const adminSecret = process.env.ADMIN_SECRET;
+  const adminSecret = process.env.ADMIN_PASSWORD || process.env.ADMIN_SECRET;
   if (!adminSecret) return true; // Allow if no secret is set (dev mode)
 
-  const authHeader = req.headers.get('x-admin-secret');
+  const authHeader = req.headers.get('x-admin-secret') || req.headers.get('x-admin-password');
   return authHeader === adminSecret;
 }
 
