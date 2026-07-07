@@ -127,7 +127,7 @@ function HowItWorksSection() {
       icon: <Zap size={28} />,
       step: '2',
       title: 'We Build Your Site',
-      description: 'We build a professional website preview tailored to your business — in one business day, not weeks.',
+      description: 'We build a website preview for your business — in one business day, not weeks.',
     },
     {
       icon: <Eye size={28} />,
