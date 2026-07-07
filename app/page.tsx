@@ -145,7 +145,7 @@ function HowItWorksSection() {
       icon: <Globe size={28} />,
       step: '5',
       title: 'Find the Perfect Domain',
-      description: 'Find the perfect domain with our help (e.g. johnsmithhvac.com).',
+      description: 'Find the perfect domain with our domain & SEO specialist (e.g. johnsmithhvac.com).',
     },
     {
       icon: <RefreshCw size={28} />,
