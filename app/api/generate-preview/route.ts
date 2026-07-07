@@ -8,6 +8,7 @@ import { buildWebsiteBrief } from '@/lib/promptBuilder';
 import { checkRateLimit, recordRequest } from '@/lib/rateLimiter';
 import { logRequest } from '@/lib/requestLogger';
 import { generateMockPreview } from '@/lib/mockPreviewGenerator';
+import { generateWebsiteWithGemini } from '@/lib/geminiGenerator';
 import { FormData, GenerationResponse } from '@/types/form';
 import { prisma } from '@/lib/prisma';
 import { sendSubmissionEmail } from '@/lib/email';
@@ -68,41 +69,27 @@ export async function POST(req: NextRequest): Promise<NextResponse<GenerationRes
     // 3. Build structured brief
     const { structured, naturalLanguage } = buildWebsiteBrief(body as FormData);
 
-    // 4. Generate preview
+    // 4. Generate the website HTML
     // ─────────────────────────────────────────────────────────────────
-    // PRODUCTION INTEGRATION POINT:
-    // If GENERATION_API_KEY is set, call your AI provider here.
-    // The naturalLanguage brief is ready to send as the generation prompt.
-    //
-    // Example (OpenAI):
-    //   const response = await openai.chat.completions.create({
-    //     model: 'gpt-4o',
-    //     messages: [{ role: 'user', content: naturalLanguage }],
-    //   });
-    //
-    // Example (Anthropic Claude):
-    //   const response = await anthropic.messages.create({
-    //     model: 'claude-opus-4-5',
-    //     messages: [{ role: 'user', content: naturalLanguage }],
-    //   });
-    //
-    // The API key MUST only be read from process.env here — never in client code.
+    // Uses Gemini if GEMINI_API_KEY is set; falls back to mock preview.
+    // The API key MUST only be read from process.env — never in client code.
     // ─────────────────────────────────────────────────────────────────
+    const previewData = generateMockPreview(structured);
+    const previewId = previewData.previewId;
 
-    const hasRealProvider = !!process.env.GENERATION_API_KEY;
+    let generatedHtml = '';
+    const hasGemini = !!process.env.GEMINI_API_KEY;
 
-    let previewData;
-
-    if (hasRealProvider) {
-      // TODO: Call real AI provider and parse response into PreviewPayload format
-      // For now, fall through to mock
-      previewData = generateMockPreview(structured);
-    } else {
-      // Use mock generator — realistic preview from structured data
-      previewData = generateMockPreview(structured);
+    if (hasGemini) {
+      try {
+        generatedHtml = await generateWebsiteWithGemini(naturalLanguage);
+      } catch (geminiError) {
+        console.error('[PROSERVICE] Gemini generation failed, using mock fallback:', geminiError);
+        // generatedHtml stays empty — preview page will use the mock React render
+      }
     }
 
-    // Save submission to database via Prisma
+    // 5. Save submission to database via Prisma
     await prisma.websiteSubmission.create({
       data: {
         business_name: body.business_name || '',
@@ -154,18 +141,19 @@ export async function POST(req: NextRequest): Promise<NextResponse<GenerationRes
         seasonal_offers: body.seasonal_offers || '',
         competitors: body.competitors || '',
         avoid_wording: body.avoid_wording || '',
-        previewId: previewData.previewId || '',
+        previewId,
+        generatedHtml,
       },
     });
 
-    // Send email notification via Nodemailer (non-blocking / caught so failure doesn't break preview)
+    // 6. Send email notification via Nodemailer (non-blocking)
     try {
-      await sendSubmissionEmail(body as FormData, previewData.previewId);
+      await sendSubmissionEmail(body as FormData, previewId);
     } catch (emailError) {
       console.error('[PROSERVICE] Failed to send notification email:', emailError);
     }
 
-    // 5. Record successful request (for rate limiting and logging)
+    // 7. Record successful request (for rate limiting and logging)
     recordRequest(ip, email, businessName);
 
     logRequest({
@@ -174,14 +162,14 @@ export async function POST(req: NextRequest): Promise<NextResponse<GenerationRes
       businessName,
       occupation: structured.occupation,
       status: 'success',
-      previewId: previewData.previewId,
+      previewId,
       durationMs: Date.now() - startTime,
     });
 
-    // 6. Return only the preview payload — no credentials, no brief internals
+    // 8. Return only the preview payload — no credentials, no brief internals
     return NextResponse.json({
       success: true,
-      previewId: previewData.previewId,
+      previewId,
       previewData,
     });
 

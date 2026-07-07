@@ -77,4 +77,6 @@ model WebsiteSubmission {
 
   // Preview generated association
   previewId              String?  @default("")
+  // AI-generated website HTML — stored for serving the preview iframe
+  generatedHtml          String?  @default("")
 }
