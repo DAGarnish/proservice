@@ -6,7 +6,7 @@ import {
   ArrowRight, CheckCircle2, Zap, FileText, Eye, Globe, Star,
   ShieldCheck, Phone, DollarSign, ChevronDown, Wrench, Paintbrush,
   Droplets, Leaf, Scissors, Car, BookOpen, Calculator, Hammer,
-  Plug, Wind, Home, Sparkles, Truck, Key, Camera
+  Plug, Wind, Home, Sparkles, Truck, Key, Camera, Settings, RefreshCw
 } from 'lucide-react';
 import styles from './page.module.css';
 
@@ -134,6 +134,24 @@ function HowItWorksSection() {
       step: '3',
       title: 'Preview & Approve',
       description: 'Review your website preview. Love it? We get you online. Want changes? We refine it.',
+    },
+    {
+      icon: <Settings size={28} />,
+      step: '4',
+      title: 'Sign Up and Refine',
+      description: 'Refine your website with our developer team and make any changes you require.',
+    },
+    {
+      icon: <Globe size={28} />,
+      step: '5',
+      title: 'Find the Perfect Domain',
+      description: 'Find the perfect domain with our help (e.g. johnsmithhvac.com).',
+    },
+    {
+      icon: <RefreshCw size={28} />,
+      step: '6',
+      title: 'Review and Refine',
+      description: 'Review and refine every quarter for no additional cost.',
     },
   ];
 
