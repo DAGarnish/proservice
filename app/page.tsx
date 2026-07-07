@@ -133,7 +133,7 @@ function HowItWorksSection() {
       icon: <Eye size={28} />,
       step: '3',
       title: 'Preview & Approve',
-      description: 'Review your website preview. Love it? We get you online. Want changes? We refine it.',
+      description: 'Review your website preview. Love it? We get you online.',
     },
     {
       icon: <Settings size={28} />,
