@@ -37,7 +37,7 @@ function HeroSection() {
           <h1 className={styles.heroTitle}>
             Get a Professional Business Website.
             <br />
-            <span className={styles.heroAccent}>Designed for free!</span>
+            <span className={styles.heroAccent}>Designed for Free!</span>
           </h1>
           <p className={styles.heroSubtitle}>
             Fill out one simple form. We build your search engine optimised website. Only pay{' '}
