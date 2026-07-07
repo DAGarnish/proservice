@@ -164,7 +164,7 @@ function HowItWorksSection() {
           <p className={styles.sectionSubtitle}>
             No learning WordPress. No fighting with Wix. No hiring expensive agencies.
             <br />
-            Just answer some questions and we handle the rest.
+            Just fill out a simple form, and our UK- and US-based team will take care of everything
           </p>
         </div>
         <div className={styles.stepsGrid}>
