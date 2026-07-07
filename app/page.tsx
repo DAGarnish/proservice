@@ -237,13 +237,13 @@ function PricingSection() {
 
             <div className={styles.addOnCard}>
               <div className={styles.addOnHeader}>
-                <Globe size={20} color="var(--color-primary)" />
+                <Settings size={20} color="var(--color-primary)" />
                 <div>
-                  <strong>Branded Domain</strong>
-                  <span className={styles.addOnPrice}>$50 URL consultation and setup</span>
+                  <strong>Extended Refinement</strong>
+                  <span className={styles.addOnPrice}>$50 one-time</span>
                 </div>
               </div>
-              <p>Get your own domain name like <strong>johnsmithhvac.com</strong> instead of <strong>webpro50.com/johnsmithhvac</strong>. Looks more professional and is better for Google rankings.</p>
+              <p>Extended refinement (up to 1 hour call) and/or additional pages for your website.</p>
             </div>
           </div>
         </div>

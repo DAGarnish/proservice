@@ -613,9 +613,9 @@ function Step7AddOns({ data, update, errors }: any) {
                onChange={e => update('branded_domain_option', e.target.checked)}
             />
             <span className="form-checkbox-label">
-               <strong style={{ display: 'block', marginBottom: '4px' }}>Branded Custom Domain</strong>
-               Get your own domain name like <em>johnsmithhvac.com</em> instead of <em>webpro50.com/johnsmithhvac</em>. Looks more professional and is better for Google rankings. 
-               <br/><span style={{ color: 'var(--color-primary)', fontWeight: 600, fontSize: '0.85em', display: 'block', marginTop: '4px' }}>$50 URL consultation and setup</span>
+               <strong style={{ display: 'block', marginBottom: '4px' }}>Extended Refinement & Extra Pages</strong>
+               Need more changes or extra pages? Get up to a 1-hour refinement call with our developers and/or additional pages for your website.
+               <br/><span style={{ color: 'var(--color-primary)', fontWeight: 600, fontSize: '0.85em', display: 'block', marginTop: '4px' }}>$50 one-time</span>
             </span>
          </label>
       </div>
