@@ -48,7 +48,9 @@ export interface FormData {
   selected_website_look: WebsiteLookId;
   match_logo_colours: boolean;
   logo_uploaded: boolean;
+  logo_data_url?: string;
   photos_uploaded: boolean;
+  uploaded_photos_urls?: string[];
   example_websites: string;
   avoid_on_site: string;
 
@@ -109,7 +111,9 @@ export const defaultFormData: FormData = {
   selected_website_look: 'professional-blue',
   match_logo_colours: false,
   logo_uploaded: false,
+  logo_data_url: '',
   photos_uploaded: false,
+  uploaded_photos_urls: [],
   example_websites: '',
   avoid_on_site: '',
 
@@ -164,7 +168,9 @@ export interface StructuredBrief {
   preferred_colours: string;
   selected_website_look: string;
   has_logo: boolean;
+  logo_data_url?: string;
   has_photos: boolean;
+  uploaded_photos_urls?: string[];
   example_websites: string;
   avoid_on_site: string;
   seo_locations: string;

@@ -10,8 +10,9 @@ import { logRequest } from '@/lib/requestLogger';
 import { generateMockPreview } from '@/lib/mockPreviewGenerator';
 import { generateWebsiteWithGemini } from '@/lib/geminiGenerator';
 import { FormData, GenerationResponse } from '@/types/form';
-import { prisma } from '@/lib/prisma';
+import { prisma, withPrismaRetry } from '@/lib/prisma';
 import { sendSubmissionEmail } from '@/lib/email';
+import { enhanceGeneratedHtml } from '@/lib/htmlSafeguard';
 
 // Helper: get client IP from request headers
 function getClientIP(req: NextRequest): string {
@@ -89,62 +90,94 @@ export async function POST(req: NextRequest): Promise<NextResponse<GenerationRes
       }
     }
 
-    // 5. Save submission to database via Prisma
-    await prisma.websiteSubmission.create({
-      data: {
-        business_name: body.business_name || '',
-        contact_name: body.contact_name || '',
-        phone_number: body.phone_number || '',
-        email_address: body.email_address || '',
-        business_address: body.business_address || '',
-        service_area: body.service_area || '',
-        occupation: body.occupation || '',
-        years_in_business: body.years_in_business || '',
-        main_services: body.main_services || '',
-        specialities: body.specialities || '',
-        price_list: body.price_list || '',
-        top_services_to_promote: body.top_services_to_promote || '',
-        emergency_service: Boolean(body.emergency_service),
-        main_cta: body.main_cta || 'call',
-        differentiator: body.differentiator || '',
-        qualifications: body.qualifications || '',
-        insurance: Boolean(body.insurance),
-        memberships: body.memberships || '',
-        specialist_tools: body.specialist_tools || '',
-        testimonials: body.testimonials || '',
-        notable_work: body.notable_work || '',
-        guarantees: body.guarantees || '',
-        style_preference: Array.isArray(body.style_preference) ? body.style_preference : [],
-        preferred_colours: body.preferred_colours || '',
-        selected_website_look: body.selected_website_look || 'professional-blue',
-        match_logo_colours: Boolean(body.match_logo_colours),
-        logo_uploaded: Boolean(body.logo_uploaded),
-        photos_uploaded: Boolean(body.photos_uploaded),
-        example_websites: body.example_websites || '',
-        avoid_on_site: body.avoid_on_site || '',
-        main_city: body.main_city || '',
-        full_service_area: body.full_service_area || '',
-        priority_locations: body.priority_locations || '',
-        seo_keywords: body.seo_keywords || '',
-        service_pages: body.service_pages !== undefined ? Boolean(body.service_pages) : true,
-        location_pages: body.location_pages !== undefined ? Boolean(body.location_pages) : true,
-        contact_number_to_show: body.contact_number_to_show || '',
-        contact_email_to_show: body.contact_email_to_show || '',
-        contact_form: body.contact_form !== undefined ? Boolean(body.contact_form) : true,
-        google_maps: body.google_maps !== undefined ? Boolean(body.google_maps) : true,
-        testimonials_on_site: body.testimonials_on_site !== undefined ? Boolean(body.testimonials_on_site) : true,
-        quote_request_form: body.quote_request_form !== undefined ? Boolean(body.quote_request_form) : true,
-        booking_or_whatsapp: body.booking_or_whatsapp || 'none',
-        google_listing_option: Boolean(body.google_listing_option),
-        branded_domain_option: Boolean(body.branded_domain_option),
-        additional_notes: body.additional_notes || '',
-        seasonal_offers: body.seasonal_offers || '',
-        competitors: body.competitors || '',
-        avoid_wording: body.avoid_wording || '',
-        previewId,
+    // ── Guarantee Logo & Photo Embedding + Mobile Header Auto-Close Safeguard ──
+    if (generatedHtml) {
+      generatedHtml = enhanceGeneratedHtml(
         generatedHtml,
-      },
-    });
+        body.logo_data_url,
+        body.business_name,
+        Array.isArray(body.uploaded_photos_urls) ? body.uploaded_photos_urls : [],
+        body.business_address || body.main_city || body.service_area || 'USA'
+      );
+    }
+
+    // 5. Save submission to database via Prisma
+    const submissionData: any = {
+      business_name: body.business_name || '',
+      contact_name: body.contact_name || '',
+      phone_number: body.phone_number || '',
+      email_address: body.email_address || '',
+      business_address: body.business_address || '',
+      service_area: body.service_area || '',
+      occupation: body.occupation || '',
+      years_in_business: body.years_in_business || '',
+      main_services: body.main_services || '',
+      specialities: body.specialities || '',
+      price_list: body.price_list || '',
+      top_services_to_promote: body.top_services_to_promote || '',
+      emergency_service: Boolean(body.emergency_service),
+      main_cta: body.main_cta || 'call',
+      differentiator: body.differentiator || '',
+      qualifications: body.qualifications || '',
+      insurance: Boolean(body.insurance),
+      memberships: body.memberships || '',
+      specialist_tools: body.specialist_tools || '',
+      testimonials: body.testimonials || '',
+      notable_work: body.notable_work || '',
+      guarantees: body.guarantees || '',
+      style_preference: Array.isArray(body.style_preference) ? body.style_preference : [],
+      preferred_colours: body.preferred_colours || '',
+      selected_website_look: body.selected_website_look || 'professional-blue',
+      match_logo_colours: Boolean(body.match_logo_colours),
+      logo_uploaded: Boolean(body.logo_uploaded),
+      logo_data_url: body.logo_data_url || '',
+      photos_uploaded: Boolean(body.photos_uploaded),
+      uploaded_photos_urls: Array.isArray(body.uploaded_photos_urls) ? body.uploaded_photos_urls : [],
+      example_websites: body.example_websites || '',
+      avoid_on_site: body.avoid_on_site || '',
+      main_city: body.main_city || '',
+      full_service_area: body.full_service_area || '',
+      priority_locations: body.priority_locations || '',
+      seo_keywords: body.seo_keywords || '',
+      service_pages: body.service_pages !== undefined ? Boolean(body.service_pages) : true,
+      location_pages: body.location_pages !== undefined ? Boolean(body.location_pages) : true,
+      contact_number_to_show: body.contact_number_to_show || '',
+      contact_email_to_show: body.contact_email_to_show || '',
+      contact_form: body.contact_form !== undefined ? Boolean(body.contact_form) : true,
+      google_maps: body.google_maps !== undefined ? Boolean(body.google_maps) : true,
+      testimonials_on_site: body.testimonials_on_site !== undefined ? Boolean(body.testimonials_on_site) : true,
+      quote_request_form: body.quote_request_form !== undefined ? Boolean(body.quote_request_form) : true,
+      booking_or_whatsapp: body.booking_or_whatsapp || 'none',
+      google_listing_option: Boolean(body.google_listing_option),
+      branded_domain_option: Boolean(body.branded_domain_option),
+      additional_notes: body.additional_notes || '',
+      seasonal_offers: body.seasonal_offers || '',
+      competitors: body.competitors || '',
+      avoid_wording: body.avoid_wording || '',
+      previewId,
+      generatedHtml,
+    };
+
+    try {
+      await withPrismaRetry(() => prisma.websiteSubmission.create({
+        data: submissionData,
+      }));
+    } catch (dbError: any) {
+      if (dbError?.message?.includes('uploaded_photos_urls')) {
+        console.warn('[PROSERVICE] Notice: Prisma Client cache is outdated in running server. Retrying creation without uploaded_photos_urls...');
+        delete submissionData.uploaded_photos_urls;
+        try {
+          await withPrismaRetry(() => prisma.websiteSubmission.create({
+            data: submissionData,
+          }));
+        } catch (retryErr: any) {
+          console.error('[PROSERVICE] Could not save to Postgres after retry:', retryErr.message);
+        }
+      } else {
+        console.error('[PROSERVICE] Database save error (Postgres connection/offline):', dbError.message);
+        // Do not throw! Let the user proceed to the live preview!
+      }
+    }
 
     // 6. Send email notification via Nodemailer (non-blocking)
     try {

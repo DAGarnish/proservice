@@ -46,7 +46,9 @@ model WebsiteSubmission {
   selected_website_look String   @default("professional-blue")
   match_logo_colours    Boolean  @default(false)
   logo_uploaded         Boolean  @default(false)
+  logo_data_url         String?  @default("")
   photos_uploaded       Boolean  @default(false)
+  uploaded_photos_urls  String[] @default([])
   example_websites      String?  @default("")
   avoid_on_site         String?  @default("")
 

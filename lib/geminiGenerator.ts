@@ -17,13 +17,16 @@ GOAL
 Generate a complete website design and implementation based on the form data. The output should be a polished business website with strong local SEO structure, clear contact paths, and a visible service area section with map support.
 
 WEBSITE REQUIREMENTS
-Build a multi-section website with the following sections where relevant:
+20. Build a multi-section website with the following sections where relevant:
 
-1. TOP HEADER / NAVIGATION BAR
-- Clean, professional header with Business Logo / Name on the left and Navigation Links (Services, About, Service Area, Contact) + Primary Call-to-Action button on the right.
+1. TOP ANNOUNCEMENT / PROMO BANNER (If Seasonal Offers exist)
+- If seasonal_offers or promotions are provided in the brief, include a top announcement bar above the header with eye-catching contrast and a CTA button.
+
+2. TOP HEADER / NAVIGATION BAR
+- Clean, professional header with Business Logo / Name on the left and Navigation Links (Services, About, Pricing, FAQ, Contact) + Primary Call-to-Action button on the right.
 - CRITICAL RESPONSIVENESS RULE FOR HEADER: The header MUST be fully responsive inside any viewport or iframe. Use CSS flexbox with 'flex-wrap: wrap' and media queries ('@media (max-width: 768px)') so that on mobile/tablet viewports (under 768px), the navigation links either wrap cleanly, adjust spacing/font-size, or stack neatly without overflowing horizontally or clipping text. Never use fixed widths that break on 390px or 768px iframe screens.
 
-2. HERO SECTION
+3. HERO SECTION
 - Business name prominently displayed
 - Strong headline based on occupation, location, and top service
 - Supporting copy focused on trust and outcome
@@ -31,54 +34,54 @@ Build a multi-section website with the following sections where relevant:
 - Secondary CTA where useful
 - Show trust indicators such as years in business, insured, qualified, emergency service, etc.
 
-2. ABOUT SECTION
+4. ABOUT SECTION
 - Short, human, specific company intro
 - Mention service area, experience, and differentiators
 - Keep tone aligned to selected style_preference and selected_website_look
 
-3. SERVICES SECTION
+5. SERVICES & PRICING SECTION
 - Clearly present main_services
 - Give extra prominence to top_services_to_promote
-- If price_list exists, show pricing in a clean readable format
-- Use cards or sections that are easy to scan
-- Add short benefit-oriented copy, not just labels
+- If price_list exists, render clean, structured pricing tiers, package cards, or a transparent pricing table (do not just list plain text bullet points).
+- Use cards or sections that are easy to scan with benefit-oriented copy and icons.
 
-4. WHY CHOOSE US / TRUST SECTION
+6. WHY CHOOSE US / TRUST SECTION
 - Use differentiator
 - Qualifications / licences / registrations / certifications
-- Insurance status
+- Insurance status (show a prominent "Fully Insured" badge if true)
 - Memberships / trade bodies
 - Specialist tools or equipment
 - Guarantees or promises
 - Notable work if available
 
-5. SERVICE AREA SECTION
-- Show the main town/city and full service area list
-- Explain where the business operates in clear language
-- Add a visual map component
-- If business_address is available and google_maps is true, include an embedded Google Map or a placeholder/embed-ready map section linked to the business location
-- If the business is a service-area business covering multiple towns, include a "Areas We Serve" map section and a textual list of target towns/cities
-- If exact map embed code is not available, build a map-ready placeholder component with clear comments showing where the Google Maps embed iframe or map URL should go
-- Make the service area section useful for both users and local SEO
-- If seo_locations are provided, use them naturally in headings or body copy
-- Include a short local-trust paragraph such as "Proudly serving homeowners and businesses across [service areas]"
+7. SERVICE AREA & INTERACTIVE GOOGLE MAP SECTION — CRITICAL
+- Show the main town/city and full service area list.
+- Explain where the business operates in clear language.
+- CRITICAL MAP RULE: To display a live, interactive Google Map without needing a paid API key, you MUST use the following free embed iframe format:
+  <iframe src="https://maps.google.com/maps?q=ENCODED_LOCATION&t=&z=13&ie=UTF8&iwloc=&output=embed" width="100%" height="380" frameborder="0" style="border:0; border-radius: 12px; box-shadow: 0 4px 15px rgba(0,0,0,0.08); width: 100%;" allowfullscreen="" loading="lazy"></iframe>
+  Replace ENCODED_LOCATION with the URL-encoded business address, main city, or service area (for example: "New+York,+NY" or "Chicago,+IL" or "London,+UK").
+- NEVER generate an empty placeholder div, mock comment, or "Map coming soon" text. You MUST ALWAYS generate a real, working iframe with the URL structure above!
 
-6. TESTIMONIALS / SOCIAL PROOF
-- If testimonials are available, display them in a strong testimonial section
-- If none are available, create a placeholder section only if appropriate and label it clearly in code comments for later replacement
-- Avoid inventing fake named reviews if real testimonials are not supplied
+8. TESTIMONIALS / SOCIAL PROOF & GALLERY
+- If testimonials are available, display them in a strong testimonial card section with star ratings.
+- If uploaded photo URLs are provided in the brief, create an "Our Work & Projects" image gallery section displaying those exact image URLs. If no uploaded photos are provided, use high-resolution Unsplash images relevant to the occupation.
 
-7. CONTACT / CTA SECTION
-- Show best phone number and email to display
-- Include strong CTA based on main_cta
-- If contact_form is true, include a quote/contact form
-- If booking_or_whatsapp is true, include those actions prominently
-- If google_maps is true, repeat the map or location details near the contact section where appropriate
+9. FAQ (FREQUENTLY ASKED QUESTIONS) SECTION — CRITICAL
+- Include a dedicated FAQ section answering common customer questions for this business type (e.g., "Do you offer emergency or same-day service?", "Are you fully licensed and insured?", "How does pricing and estimating work?", "What areas do you cover?").
+- Structure questions using clean toggle cards or details/summary tags so customers can find answers quickly.
+
+10. LEAD CAPTURE / QUOTE REQUEST FORM SECTION
+- Include a high-converting contact/quote form section with styled HTML input fields: Full Name, Phone Number, Email Address, Service Needed (dropdown or text), and Message/Project Details.
+- Include a prominent submit button styled with the primary accent color.
+- Show best phone number (<a href="tel:...">) and email (<a href="mailto:...">) alongside the form.
+
+11. FLOATING MOBILE ACTION BAR (FOR MOBILE VIEWPORTS)
+- For mobile devices (under 768px), include a fixed bottom contact bar with quick action buttons (e.g., "Call Now" and "Get a Quote" or "WhatsApp") so visitors on smartphones can contact the business immediately from any scroll position.
 
 DESIGN AND STYLE RULES
 - Use selected_website_look and preferred_colours as the main design direction
 - If a website look is selected, reflect that style in layout, colours, accents, button style, and section tone
-- Design must feel premium but practical
+- Design must feel premium, vibrant, state of the art, and conversion-focused
 - Avoid generic AI-looking SaaS templates
 - Prioritize trust, clarity, readability, and conversion
 
@@ -97,18 +100,19 @@ SEO AND CONTENT RULES
 - Use strong title, H1, H2, meta-description-ready copy patterns
 - Keep local intent visible in the hero, services, and service area sections
 
-MAP REQUIREMENTS
-- Include a service area map section on the page
-- If a physical address is provided, include a business location map or map embed placeholder
-- Structure the map block so it can accept a Google Maps embed iframe
-- If a real embed is not available at build time, include a clearly labeled map placeholder card with comments
-- The map section should be visually clean, responsive, and useful
+MAP REQUIREMENTS — MANDATORY
+- You MUST include the live interactive Google Map iframe using: https://maps.google.com/maps?q=ENCODED_LOCATION&t=&z=13&ie=UTF8&iwloc=&output=embed
+- NEVER output empty placeholders, TODO comments, or broken map tags.
 
 FUNCTIONAL REQUIREMENTS
 - Responsive design (mobile-first)
+- INTERACTIVITY & NAVIGATION RULE: To ensure smooth scrolling and interactivity when clicking navbar links:
+  1. Every major section MUST have an ID: <section id="services">, <section id="about">, <section id="pricing">, <section id="why-us">, <section id="location">, <section id="gallery">, <section id="faq">, <section id="contact">.
+  2. Navbar links MUST be valid anchor links pointing to those IDs: <a href="#services">Services</a>, <a href="#about">About</a>, <a href="#pricing">Pricing</a>, <a href="#faq">FAQ</a>, <a href="#contact">Contact</a>.
+  3. Include CSS in <style>: html { scroll-behavior: smooth !important; }
 - Click-to-call phone links on mobile: <a href="tel:PHONENUMBER">
 - Email links: <a href="mailto:EMAIL">
-- Contact form if requested
+- Styled HTML contact/quote form
 - WhatsApp or booking CTA if requested
 - Structured sections easy to edit later
 - Clean, self-contained HTML

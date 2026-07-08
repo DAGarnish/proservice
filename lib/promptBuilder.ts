@@ -40,7 +40,9 @@ export function buildWebsiteBrief(data: FormData): WebsiteBrief {
     preferred_colours: data.preferred_colours,
     selected_website_look: data.selected_website_look,
     has_logo: data.logo_uploaded,
+    logo_data_url: data.logo_data_url || '',
     has_photos: data.photos_uploaded,
+    uploaded_photos_urls: data.uploaded_photos_urls || [],
     example_websites: data.example_websites,
     avoid_on_site: data.avoid_on_site,
     seo_locations: [data.main_city, data.full_service_area, data.priority_locations]
@@ -104,7 +106,11 @@ function generateNaturalLanguageBrief(s: StructuredBrief): string {
   if (s.style_preference.length) lines.push(`Style keywords: ${s.style_preference.join(', ')}`);
   if (s.preferred_colours) lines.push(`Preferred colours: ${s.preferred_colours}`);
   lines.push(`Has logo: ${s.has_logo ? 'Yes' : 'No — generate professional placeholder'}`);
+  if (s.logo_data_url) lines.push(`Logo Data URL: ${s.logo_data_url}\nINSTRUCTION: The user provided their logo image as a base64 Data URL. You MUST include an <img src="${s.logo_data_url}" alt="${s.business_name} Logo" class="logo" style="max-height: 48px; width: auto; object-fit: contain;"> tag inside the header navbar and footer of the generated HTML website!`);
   lines.push(`Has photos: ${s.has_photos ? 'Yes' : 'No — use professional stock images relevant to ' + s.occupation}`);
+  if (s.uploaded_photos_urls && s.uploaded_photos_urls.length > 0) {
+    lines.push(`Uploaded Photo URLs: ${s.uploaded_photos_urls.join(', ')}\nINSTRUCTION: The user uploaded real business photos hosted on Supabase Storage. You MUST use these image URLs as the <img src="..."> in the Hero section, About section, Service cards, or Gallery of the generated HTML website!`);
+  }
   if (s.example_websites) lines.push(`Reference websites: ${s.example_websites}`);
   if (s.avoid_on_site) lines.push(`Do NOT include: ${s.avoid_on_site}\n`);
 
@@ -116,13 +122,17 @@ function generateNaturalLanguageBrief(s: StructuredBrief): string {
   lines.push(`Display phone: ${s.contact_number_to_show}`);
   lines.push(`Display email: ${s.contact_email_to_show}`);
   const features = [
-    s.contact_form ? 'Contact form' : '',
-    s.google_maps ? 'Google Maps embed' : '',
-    s.testimonials_on_site ? 'Testimonials section' : '',
-    s.quote_request_form ? 'Quote request form' : '',
-    s.booking_or_whatsapp !== 'none' ? `${s.booking_or_whatsapp} integration` : '',
+    s.contact_form ? 'Styled HTML Contact Form' : '',
+    s.google_maps ? `Live Google Maps iframe embed using URL: https://maps.google.com/maps?q=${encodeURIComponent(s.business_address || s.service_area || s.seo_locations.split(';')[0] || 'USA')}&t=&z=13&ie=UTF8&iwloc=&output=embed` : '',
+    s.testimonials_on_site ? 'Testimonials section with star ratings' : '',
+    s.quote_request_form ? 'High-converting Quote Request Form with styled input fields' : '',
+    s.booking_or_whatsapp !== 'none' ? `${s.booking_or_whatsapp} integration and floating mobile action bar` : '',
+    'FAQ Section with toggle/accordion answers',
   ].filter(Boolean);
-  if (features.length) lines.push(`Features to include: ${features.join(', ')}\n`);
+  if (features.length) {
+    lines.push(`Features to include: ${features.join(' — ')}\n`);
+    lines.push(`MANDATORY INSTRUCTIONS:\n1. MAP: You MUST include the live interactive Google Map iframe with the URL above. Never create empty placeholders!\n2. FAQ: Include a dedicated FAQ section answering 4 common questions for ${s.occupation}.\n3. FORM: Include a styled HTML lead capture form (Name, Phone, Email, Service Needed, Message).\n4. MOBILE: Include a fixed bottom mobile action bar for easy calling/messaging on smartphones.\n`);
+  }
 
   if (s.additional_notes) lines.push(`Additional instructions: ${s.additional_notes}`);
   if (s.seasonal_offers) lines.push(`Seasonal offers: ${s.seasonal_offers}`);

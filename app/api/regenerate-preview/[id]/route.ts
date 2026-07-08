@@ -2,11 +2,12 @@
 // SECURE server-side endpoint to regenerate a saved website preview in Next.js using Gemini AI.
 
 import { NextRequest, NextResponse } from 'next/server';
-import { prisma } from '@/lib/prisma';
+import { prisma, withPrismaRetry } from '@/lib/prisma';
 import { buildWebsiteBrief } from '@/lib/promptBuilder';
 import { generateMockPreview } from '@/lib/mockPreviewGenerator';
 import { generateWebsiteWithGemini } from '@/lib/geminiGenerator';
 import { FormData } from '@/types/form';
+import { enhanceGeneratedHtml } from '@/lib/htmlSafeguard';
 
 export async function POST(
   _req: NextRequest,
@@ -19,9 +20,9 @@ export async function POST(
   }
 
   try {
-    const submission = await prisma.websiteSubmission.findFirst({
+    const submission = await withPrismaRetry(() => prisma.websiteSubmission.findFirst({
       where: { previewId: id },
-    });
+    }));
 
     if (!submission) {
       return NextResponse.json({ success: false, error: 'Saved website project not found' }, { status: 404 });
@@ -50,13 +51,24 @@ export async function POST(
       generatedHtml = submission.generatedHtml;
     }
 
+    // ── Guarantee Logo & Photo Embedding + Mobile Header Auto-Close Safeguard ──
+    if (generatedHtml) {
+      generatedHtml = enhanceGeneratedHtml(
+        generatedHtml,
+        submission.logo_data_url,
+        submission.business_name,
+        submission.uploaded_photos_urls,
+        submission.business_address || submission.main_city || submission.service_area || 'USA'
+      );
+    }
+
     // 4. Update submission in database
-    await prisma.websiteSubmission.update({
+    await withPrismaRetry(() => prisma.websiteSubmission.update({
       where: { id: submission.id },
       data: {
         generatedHtml,
       },
-    });
+    }));
 
     // 5. Apply viewport and responsive header safeguard to returned HTML
     let html = generatedHtml || '';

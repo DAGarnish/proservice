@@ -34,12 +34,14 @@ interface BriefSnippet {
   contact_form: boolean;
   google_maps: boolean;
   google_listing_option: boolean;
+  logo_data_url?: string | null;
   branded_domain_option: boolean;
   years_in_business: string | null;
   main_services: string;
   seo_keywords: string | null;
   main_city: string;
   full_service_area: string | null;
+  uploaded_photos_urls?: string[] | null;
 }
 
 interface PreviewResponse {
@@ -162,14 +164,29 @@ export default function PreviewPage() {
     if (!previewId) return;
 
     const fetchPreview = async () => {
+      let loadedFromStorage = false;
+      try {
+        const cached = sessionStorage.getItem('proservice_preview_' + previewId);
+        if (cached) {
+          const parsed = JSON.parse(cached);
+          if (parsed && (parsed.generatedHtml || parsed.brief)) {
+            setData(parsed);
+            setLoading(false);
+            loadedFromStorage = true;
+          }
+        }
+      } catch (e) {}
+
       try {
         const res = await fetch(`/api/preview-html/${previewId}`);
         if (!res.ok) throw new Error(`HTTP ${res.status}`);
         const json: PreviewResponse = await res.json();
         setData(json);
       } catch (err: any) {
-        console.error('Failed to fetch preview:', err);
-        setError(err.message || 'Failed to load preview');
+        console.error('Failed to fetch preview from API:', err);
+        if (!loadedFromStorage) {
+          setError(err.message || 'Failed to load preview');
+        }
       } finally {
         setLoading(false);
       }
@@ -490,6 +507,8 @@ export default function PreviewPage() {
 // ─── Fallback Mockup (if Gemini didn't generate HTML) ────────────────────────
 
 function FallbackMockup({ brief, palette }: { brief: BriefSnippet; palette: { primary: string; secondary: string; accent: string } }) {
+  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+
   // Build service list from brief
   const servicesList = brief.main_services
     ? brief.main_services.split(/[,\n;]+/).map(s => s.trim()).filter(Boolean).slice(0, 6)
@@ -502,19 +521,37 @@ function FallbackMockup({ brief, palette }: { brief: BriefSnippet; palette: { pr
     >
       {/* Mock Header */}
       <header className={styles.mockHeader}>
-        <div className={styles.mockLogo}>{brief.business_name}</div>
-        <nav className={styles.mockNav}>
-          <span>Services</span>
-          <span>About</span>
-          <span>Contact</span>
+        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', width: '100%' }}>
+          {brief.logo_data_url ? (
+            <img src={brief.logo_data_url} alt={brief.business_name} style={{ maxHeight: '42px', maxWidth: '180px', objectFit: 'contain' }} />
+          ) : (
+            <div className={styles.mockLogo}>{brief.business_name}</div>
+          )}
+          <button
+            className={styles.mockHamburgerBtn}
+            onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
+            aria-label="Toggle Menu"
+          >
+            {mobileMenuOpen ? '✕' : '☰'}
+          </button>
+        </div>
+        <nav className={`${styles.mockNav} ${mobileMenuOpen ? styles.mockNavOpen : ''}`}>
+          <a href="#services" style={{ cursor: 'pointer', textDecoration: 'none', color: 'inherit' }} onClick={(e) => { e.preventDefault(); setMobileMenuOpen(false); document.getElementById('services')?.scrollIntoView({ behavior: 'smooth' }); }}>Services</a>
+          <a href="#about" style={{ cursor: 'pointer', textDecoration: 'none', color: 'inherit' }} onClick={(e) => { e.preventDefault(); setMobileMenuOpen(false); document.getElementById('about')?.scrollIntoView({ behavior: 'smooth' }); }}>About</a>
+          <a href="#location" style={{ cursor: 'pointer', textDecoration: 'none', color: 'inherit' }} onClick={(e) => { e.preventDefault(); setMobileMenuOpen(false); document.getElementById('location')?.scrollIntoView({ behavior: 'smooth' }); }}>Service Area</a>
+          <a href="#faq" style={{ cursor: 'pointer', textDecoration: 'none', color: 'inherit' }} onClick={(e) => { e.preventDefault(); setMobileMenuOpen(false); document.getElementById('faq')?.scrollIntoView({ behavior: 'smooth' }); }}>FAQ</a>
+          <a href="#contact" style={{ cursor: 'pointer', textDecoration: 'none', color: 'inherit' }} onClick={(e) => { e.preventDefault(); setMobileMenuOpen(false); (document.getElementById('contact') || document.getElementById('footer'))?.scrollIntoView({ behavior: 'smooth' }); }}>Contact</a>
+          <button className={`${styles.mockBtnPrimary} ${styles.mobileOnlyBtn}`} style={{ background: palette.primary }} onClick={() => { setMobileMenuOpen(false); (document.getElementById('contact') || document.getElementById('footer'))?.scrollIntoView({ behavior: 'smooth' }); }}>
+            {brief.main_cta === 'quote' ? 'Get a Quote' : brief.contact_number_to_show || 'Call Now'}
+          </button>
         </nav>
-        <button className={styles.mockBtnPrimary} style={{ background: palette.primary }}>
+        <button className={`${styles.mockBtnPrimary} ${styles.desktopOnlyBtn}`} style={{ background: palette.primary }} onClick={() => (document.getElementById('contact') || document.getElementById('footer'))?.scrollIntoView({ behavior: 'smooth' })}>
           {brief.main_cta === 'quote' ? 'Get a Quote' : brief.contact_number_to_show || 'Call Now'}
         </button>
       </header>
 
       {/* Mock Hero */}
-      <section className={styles.mockHero} style={{ background: palette.primary }}>
+      <section id="hero" className={styles.mockHero} style={{ background: palette.primary }}>
         <div className={styles.mockHeroContent}>
           {brief.emergency_service && (
             <div className={styles.mockEmergencyBadge}>
@@ -529,10 +566,10 @@ function FallbackMockup({ brief, palette }: { brief: BriefSnippet; palette: { pr
             {brief.years_in_business ? ` Over ${brief.years_in_business} of experience.` : ''}
           </p>
           <div className={styles.mockHeroCta}>
-            <button className={styles.mockBtnAccent} style={{ background: palette.accent }}>
+            <button className={styles.mockBtnAccent} style={{ background: palette.accent }} onClick={() => (document.getElementById('contact') || document.getElementById('footer'))?.scrollIntoView({ behavior: 'smooth' })}>
               {brief.main_cta === 'quote' ? 'Request Free Quote' : 'Call Now'}
             </button>
-            <button className={styles.mockBtnOutline}>Our Services</button>
+            <button className={styles.mockBtnOutline} onClick={() => document.getElementById('services')?.scrollIntoView({ behavior: 'smooth' })}>Our Services</button>
           </div>
         </div>
       </section>
@@ -545,7 +582,7 @@ function FallbackMockup({ brief, palette }: { brief: BriefSnippet; palette: { pr
       </div>
 
       {/* Services */}
-      <section className={styles.mockSection}>
+      <section id="services" className={styles.mockSection}>
         <h2 className={styles.mockSectionTitle}>Our Services</h2>
         <div className={styles.mockSectionDivider} style={{ background: palette.primary }} />
         <div className={styles.mockServicesGrid}>
@@ -561,8 +598,23 @@ function FallbackMockup({ brief, palette }: { brief: BriefSnippet; palette: { pr
         </div>
       </section>
 
+      {/* Uploaded Business Photos Gallery */}
+      {brief.uploaded_photos_urls && brief.uploaded_photos_urls.length > 0 && (
+        <section id="gallery" className={styles.mockSection} style={{ background: '#ffffff' }}>
+          <h2 className={styles.mockSectionTitle}>Our Work &amp; Business</h2>
+          <div className={styles.mockSectionDivider} style={{ background: palette.primary }} />
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(240px, 1fr))', gap: '1.5rem', maxWidth: '1000px', margin: '0 auto' }}>
+            {brief.uploaded_photos_urls.map((url, idx) => (
+              <div key={idx} style={{ borderRadius: '12px', overflow: 'hidden', boxShadow: '0 4px 15px rgba(0,0,0,0.1)', height: '220px' }}>
+                <img src={url} alt={`${brief.business_name} photo ${idx + 1}`} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+              </div>
+            ))}
+          </div>
+        </section>
+      )}
+
       {/* Why Choose Us */}
-      <section className={styles.mockSection} style={{ background: '#f8f9fa' }}>
+      <section id="about" className={styles.mockSection} style={{ background: '#f8f9fa' }}>
         <h2 className={styles.mockSectionTitle}>Why Choose {brief.business_name}?</h2>
         <div className={styles.mockSectionDivider} style={{ background: palette.primary, margin: '1rem 0 2rem' }} />
         <ul className={styles.mockBulletList}>
@@ -574,10 +626,92 @@ function FallbackMockup({ brief, palette }: { brief: BriefSnippet; palette: { pr
         </ul>
       </section>
 
+      {/* Service Area & Interactive Google Map */}
+      <section id="location" className={styles.mockSection}>
+        <h2 className={styles.mockSectionTitle}>Our Service Area &amp; Location</h2>
+        <div className={styles.mockSectionDivider} style={{ background: palette.primary }} />
+        <p style={{ textAlign: 'center', color: '#4b5563', marginBottom: '2rem', fontSize: '1.1rem' }}>
+          Proudly serving customers across {brief.service_area || brief.main_city || 'your area'} and surrounding communities.
+        </p>
+        <div style={{ borderRadius: '12px', overflow: 'hidden', boxShadow: '0 10px 25px rgba(0,0,0,0.1)', background: '#fff', padding: '8px', maxWidth: '1000px', margin: '0 auto' }}>
+          <iframe
+            src={`https://maps.google.com/maps?q=${encodeURIComponent(brief.service_area || brief.main_city || 'USA')}&t=&z=13&ie=UTF8&iwloc=&output=embed`}
+            width="100%"
+            height="380"
+            frameBorder="0"
+            style={{ border: 0, borderRadius: '8px', width: '100%' }}
+            allowFullScreen={false}
+            loading="lazy"
+            title="Service Area Map"
+          />
+        </div>
+      </section>
+
+      {/* FAQ Section */}
+      <section id="faq" className={styles.mockSection} style={{ background: '#f8f9fa' }}>
+        <h2 className={styles.mockSectionTitle}>Frequently Asked Questions</h2>
+        <div className={styles.mockSectionDivider} style={{ background: palette.primary }} />
+        <div style={{ maxWidth: '800px', margin: '0 auto', display: 'flex', flexDirection: 'column', gap: '1rem' }}>
+          <details style={{ background: '#fff', padding: '1.25rem', borderRadius: '8px', boxShadow: '0 2px 8px rgba(0,0,0,0.05)', cursor: 'pointer' }}>
+            <summary style={{ fontWeight: 600, fontSize: '1.05rem', color: '#1f2937' }}>Do you offer emergency or same-day service?</summary>
+            <p style={{ marginTop: '0.75rem', color: '#4b5563', lineHeight: 1.6 }}>{brief.emergency_service ? 'Yes! We offer 24/7 emergency response. Call our number immediately if you need urgent assistance.' : 'We strive to accommodate urgent requests and can often schedule same-day or next-day visits depending on availability.'}</p>
+          </details>
+          <details style={{ background: '#fff', padding: '1.25rem', borderRadius: '8px', boxShadow: '0 2px 8px rgba(0,0,0,0.05)', cursor: 'pointer' }}>
+            <summary style={{ fontWeight: 600, fontSize: '1.05rem', color: '#1f2937' }}>Are you fully licensed and insured?</summary>
+            <p style={{ marginTop: '0.75rem', color: '#4b5563', lineHeight: 1.6 }}>{brief.insurance ? 'Yes, we are fully insured and carry comprehensive liability coverage for your total peace of mind.' : 'Yes, we adhere to all professional industry standards and qualifications.'}</p>
+          </details>
+          <details style={{ background: '#fff', padding: '1.25rem', borderRadius: '8px', boxShadow: '0 2px 8px rgba(0,0,0,0.05)', cursor: 'pointer' }}>
+            <summary style={{ fontWeight: 600, fontSize: '1.05rem', color: '#1f2937' }}>How does pricing and estimating work?</summary>
+            <p style={{ marginTop: '0.75rem', color: '#4b5563', lineHeight: 1.6 }}>We believe in clear, upfront pricing with zero hidden fees. Contact us for a fast, free, transparent quote before any work begins.</p>
+          </details>
+          <details style={{ background: '#fff', padding: '1.25rem', borderRadius: '8px', boxShadow: '0 2px 8px rgba(0,0,0,0.05)', cursor: 'pointer' }}>
+            <summary style={{ fontWeight: 600, fontSize: '1.05rem', color: '#1f2937' }}>What areas do you cover?</summary>
+            <p style={{ marginTop: '0.75rem', color: '#4b5563', lineHeight: 1.6 }}>We proudly cover {brief.full_service_area || brief.service_area || brief.main_city} and surrounding communities.</p>
+          </details>
+        </div>
+      </section>
+
+      {/* Lead Capture Form Section */}
+      {brief.contact_form && (
+        <section id="contact" className={styles.mockSection} style={{ background: '#ffffff' }}>
+          <h2 className={styles.mockSectionTitle}>Request a Free Quote</h2>
+          <div className={styles.mockSectionDivider} style={{ background: palette.primary }} />
+          <p style={{ textAlign: 'center', color: '#4b5563', marginBottom: '2.5rem', fontSize: '1.1rem' }}>
+            Fill out the form below and we will get back to you promptly.
+          </p>
+          <div style={{ maxWidth: '600px', margin: '0 auto', background: '#f8f9fa', padding: '2rem', borderRadius: '12px', boxShadow: '0 4px 15px rgba(0,0,0,0.05)' }}>
+            <div style={{ display: 'grid', gap: '1.25rem' }}>
+              <div>
+                <label style={{ display: 'block', fontSize: '0.9rem', fontWeight: 600, color: '#374151', marginBottom: '0.5rem' }}>Your Name</label>
+                <input type="text" placeholder="John Doe" readOnly style={{ width: '100%', padding: '0.75rem', borderRadius: '6px', border: '1px solid #d1d5db', background: '#fff' }} />
+              </div>
+              <div>
+                <label style={{ display: 'block', fontSize: '0.9rem', fontWeight: 600, color: '#374151', marginBottom: '0.5rem' }}>Phone Number</label>
+                <input type="tel" placeholder="(555) 000-0000" readOnly style={{ width: '100%', padding: '0.75rem', borderRadius: '6px', border: '1px solid #d1d5db', background: '#fff' }} />
+              </div>
+              <div>
+                <label style={{ display: 'block', fontSize: '0.9rem', fontWeight: 600, color: '#374151', marginBottom: '0.5rem' }}>Service Needed</label>
+                <input type="text" placeholder={`General ${brief.occupation || 'Service'} Inquiry`} readOnly style={{ width: '100%', padding: '0.75rem', borderRadius: '6px', border: '1px solid #d1d5db', background: '#fff' }} />
+              </div>
+              <div>
+                <label style={{ display: 'block', fontSize: '0.9rem', fontWeight: 600, color: '#374151', marginBottom: '0.5rem' }}>Message / Project Details</label>
+                <textarea rows={3} placeholder="Tell us about your project..." readOnly style={{ width: '100%', padding: '0.75rem', borderRadius: '6px', border: '1px solid #d1d5db', background: '#fff' }} />
+              </div>
+              <button className={styles.mockBtnPrimary} style={{ background: palette.primary, width: '100%', padding: '1rem', fontSize: '1.05rem' }}>
+                Submit Quote Request
+              </button>
+            </div>
+          </div>
+        </section>
+      )}
+
       {/* Mock Footer */}
-      <footer className={styles.mockFooter}>
+      <footer id="footer" className={styles.mockFooter}>
         <div className={styles.mockFooterGrid}>
           <div>
+            {brief.logo_data_url ? (
+              <img src={brief.logo_data_url} alt={brief.business_name} style={{ maxHeight: '36px', maxWidth: '150px', objectFit: 'contain', marginBottom: '8px' }} />
+            ) : null}
             <h3>{brief.business_name}</h3>
             <p>Your trusted local {brief.occupation?.toLowerCase()} in {brief.service_area || brief.main_city}.</p>
           </div>

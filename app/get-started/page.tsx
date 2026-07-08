@@ -8,6 +8,9 @@ import { useRouter } from 'next/navigation';
 import { defaultFormData, FormData, WebsiteLookId } from '@/types/form';
 import { validateStepByIndex, hasErrors, StepErrors } from '@/lib/validation';
 import { toast } from 'react-toastify';
+import Compressor from 'compressorjs';
+import { Upload, Sparkles, Image as ImageIcon, Zap, CheckCircle2, Loader2 } from 'lucide-react';
+import { uploadLogoToSupabase } from '@/lib/supabaseClient';
 import styles from './get-started.module.css';
 
 const TOTAL_STEPS = 7;
@@ -20,16 +23,17 @@ export default function GetStartedPage() {
   const [errors, setErrors] = useState<StepErrors>({});
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [submitError, setSubmitError] = useState('');
+  const [buildLogs, setBuildLogs] = useState<Array<{ time: string; text: string; type: 'info' | 'success' | 'warn' | 'error' }>>([]);
 
   const handleNext = () => {
     const stepErrors = validateStepByIndex(currentStep, formData);
+    
     if (hasErrors(stepErrors)) {
       setErrors(stepErrors);
-      // Scroll to top to see errors
-      window.scrollTo({ top: 0, behavior: 'smooth' });
+      toast.error('Please fill in all required fields before continuing.');
       return;
     }
-    
+
     setErrors({});
     if (currentStep < TOTAL_STEPS - 1) {
       setCurrentStep(curr => curr + 1);
@@ -62,8 +66,44 @@ export default function GetStartedPage() {
   const handleSubmit = async () => {
     setIsSubmitting(true);
     setSubmitError('');
+    setBuildLogs([]);
 
-    const toastId = toast.loading('Submitting your preferences and saving to database...');
+    const addBuildLog = (text: string, type: 'info' | 'success' | 'warn' | 'error' = 'info') => {
+      const now = new Date();
+      const time = `${now.getHours().toString().padStart(2, '0')}:${now.getMinutes().toString().padStart(2, '0')}:${now.getSeconds().toString().padStart(2, '0')}`;
+      setBuildLogs(prev => [...prev, { time, text, type }]);
+    };
+
+    addBuildLog(`🚀 Initializing AI Website Studio for "${formData.business_name}"...`, 'info');
+    addBuildLog(`📋 Compiling business brief: ${formData.occupation} in ${formData.main_city}...`, 'info');
+    if (formData.logo_data_url) {
+      if (formData.logo_data_url.includes('supabase.co')) {
+        addBuildLog(`🖼️ Guaranteeing Supabase-hosted logo embedding: ${formData.logo_data_url.slice(0, 40)}...`, 'success');
+      } else {
+        addBuildLog(`🖼️ Guaranteeing compressed logo embedding into website layout!`, 'success');
+      }
+    }
+    addBuildLog(`🤖 Connecting to Google Gemini AI to generate full-stack HTML & CSS...`, 'info');
+
+    const toastId = toast.loading('Submitting your preferences and generating website...');
+
+    const progressInterval = setInterval(() => {
+      const msgs = [
+        `🎨 Applying "${formData.selected_website_look}" brand palette & typography...`,
+        `📝 Generating SEO copy, service cards, and about section...`,
+        `📱 Formatting responsive header navigation & contact forms...`,
+        `🖼️ Guaranteeing logo embedding in header navbar and footer...`,
+        `💾 Finalizing layout and preparing live interactive preview...`
+      ];
+      setBuildLogs(prev => {
+        if (prev.length < msgs.length + 4) {
+          const now = new Date();
+          const time = `${now.getHours().toString().padStart(2, '0')}:${now.getMinutes().toString().padStart(2, '0')}:${now.getSeconds().toString().padStart(2, '0')}`;
+          return [...prev, { time, text: msgs[prev.length - 4] || '⏳ Optimizing website assets...', type: 'info' }];
+        }
+        return prev;
+      });
+    }, 1800);
 
     try {
       const response = await fetch('/api/generate-preview', {
@@ -72,11 +112,16 @@ export default function GetStartedPage() {
         body: JSON.stringify(formData),
       });
 
+      clearInterval(progressInterval);
       const data = await response.json();
 
       if (!response.ok || !data.success) {
         throw new Error(data.error || 'Failed to generate preview');
       }
+
+      addBuildLog(`💾 Saving project submission to PostgreSQL database...`, 'info');
+      addBuildLog(`✅ Website successfully generated with Gemini AI!`, 'success');
+      addBuildLog(`🎉 Redirecting to live interactive preview...`, 'success');
 
       toast.update(toastId, {
         render: '🎉 Successfully submitted! Redirecting to your website preview...',
@@ -85,16 +130,30 @@ export default function GetStartedPage() {
         autoClose: 2500,
       });
 
+      // Save generated preview in session storage for instant loading / resilience against DB connection drops
+      try {
+        if (data.generatedHtml) {
+          sessionStorage.setItem('proservice_preview_' + data.previewId, JSON.stringify({
+            generatedHtml: data.generatedHtml,
+            brief: formData
+          }));
+        }
+      } catch (e) {}
+
       // Redirect to preview screen
       if (data.previewId) {
-         router.push(`/preview/${data.previewId}`);
+         setTimeout(() => {
+           router.push(`/preview/${data.previewId}`);
+         }, 800);
       } else {
          throw new Error("No preview ID returned");
       }
       
     } catch (err: any) {
+      clearInterval(progressInterval);
       const errorMessage = err.message || 'An unexpected error occurred.';
       setSubmitError(errorMessage);
+      addBuildLog(`❌ Build error: ${errorMessage}`, 'error');
       toast.update(toastId, {
         render: `❌ Error: ${errorMessage}`,
         type: 'error',
@@ -181,6 +240,37 @@ export default function GetStartedPage() {
             </button>
           </div>
         </div>
+
+        {/* ── Live Build Generation Terminal Modal ── */}
+        {isSubmitting && (
+          <div className={styles.buildModalOverlay}>
+            <div className={styles.buildModalBox}>
+              <div className={styles.logTerminalHeader}>
+                <div className={styles.logTerminalDots}>
+                  <span style={{ background: '#ef4444' }} />
+                  <span style={{ background: '#f59e0b' }} />
+                  <span style={{ background: '#10b981' }} />
+                </div>
+                <span className={styles.logTerminalTitle}>🤖 WEBPRO50 AI Website Studio — Live Generation Logs</span>
+                <Loader2 size={16} className={styles.spinnerIcon} color="#10b981" />
+              </div>
+              <div className={styles.logTerminalBody} style={{ minHeight: '220px', maxHeight: '350px' }}>
+                {buildLogs.map((log, idx) => (
+                  <div key={idx} className={`${styles.logLine} ${styles['log_' + log.type]}`}>
+                    <span className={styles.logTime}>[{log.time}]</span>
+                    <span className={styles.logText}>{log.text}</span>
+                  </div>
+                ))}
+                <div className={styles.logLine}>
+                  <span className={styles.logTime}>[{new Date().toLocaleTimeString()}]</span>
+                  <span className={styles.logText} style={{ color: '#10b981' }}>
+                    ⏳ Please wait, AI is compiling your professional website...
+                  </span>
+                </div>
+              </div>
+            </div>
+          </div>
+        )}
       </div>
     </div>
   );
@@ -436,6 +526,88 @@ function Step3Trust({ data, update, errors }: any) {
 }
 
 function Step4Brand({ data, update, errors }: any) {
+  const [activeTab, setActiveTab] = useState<'upload' | 'generate'>('upload');
+  const [isCompressing, setIsCompressing] = useState(false);
+  const [compressionStats, setCompressionStats] = useState<string>('');
+  const [isGenerating, setIsGenerating] = useState(false);
+  const [logoPrompt, setLogoPrompt] = useState('');
+  const [genError, setGenError] = useState('');
+  const [liveLogs, setLiveLogs] = useState<Array<{ time: string; text: string; type: 'info' | 'success' | 'warn' | 'error' }>>([]);
+  const [isUploadingSupabase, setIsUploadingSupabase] = useState(false);
+  const [supabaseUrl, setSupabaseUrl] = useState<string>('');
+  const [isCompressingPhoto, setIsCompressingPhoto] = useState(false);
+  const [isUploadingPhoto, setIsUploadingPhoto] = useState(false);
+  const [photoStats, setPhotoStats] = useState<string>('');
+
+  const handlePhotoUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const files = e.target.files;
+    if (!files || files.length === 0) return;
+
+    setIsCompressingPhoto(true);
+    setIsUploadingPhoto(false);
+    setPhotoStats('');
+    
+    const currentUrls = Array.isArray(data.uploaded_photos_urls) ? [...data.uploaded_photos_urls] : [];
+
+    for (let i = 0; i < files.length; i++) {
+      const file = files[i];
+      addLog(`📁 Selected photo [${i + 1}/${files.length}]: "${file.name}" (${(file.size / 1024).toFixed(1)} KB)`, 'info');
+      addLog('⚡ Running Compressor.js client-side optimization on photo...', 'info');
+
+      await new Promise<void>((resolve) => {
+        new Compressor(file, {
+          quality: 0.65,
+          maxWidth: 1200,
+          maxHeight: 1200,
+          mimeType: file.type.includes('png') ? 'image/png' : 'image/jpeg',
+          async success(compressedResult: Blob | File) {
+            const origKB = (file.size / 1024).toFixed(1);
+            const compKB = (compressedResult.size / 1024).toFixed(1);
+            const savedPct = Math.round((1 - compressedResult.size / file.size) * 100);
+
+            addLog(`⚡ Photo compressed! Reduced from ${origKB} KB to ${compKB} KB (${savedPct}% saved)`, 'success');
+            setPhotoStats(`⚡ Last photo compressed by ${savedPct}% (${origKB} KB ➔ ${compKB} KB)`);
+
+            setIsUploadingPhoto(true);
+            addLog('📦 Uploading compressed photo to Supabase cloud bucket...', 'info');
+
+            try {
+              const publicUrl = await uploadLogoToSupabase(compressedResult, `photo_${Date.now()}_${i}_${file.name}`);
+              currentUrls.push(publicUrl);
+              update('uploaded_photos_urls', [...currentUrls]);
+              addLog(`✅ Photo hosted on Supabase: ${publicUrl}`, 'success');
+              toast.success(`Photo #${i + 1} compressed & hosted on Supabase!`);
+            } catch (err: any) {
+              addLog(`⚠️ Supabase photo upload fallback note: ${err.message}`, 'warn');
+              const reader = new FileReader();
+              reader.readAsDataURL(compressedResult);
+              reader.onloadend = () => {
+                const base64 = reader.result as string;
+                currentUrls.push(base64);
+                update('uploaded_photos_urls', [...currentUrls]);
+                addLog('🔒 Stored photo as compressed Data URL backup!', 'info');
+              };
+            }
+            setIsUploadingPhoto(false);
+            resolve();
+          },
+          error(err) {
+            addLog(`❌ Photo compression error: ${err.message}`, 'error');
+            toast.error('Failed to compress photo.');
+            resolve();
+          },
+        });
+      });
+    }
+    setIsCompressingPhoto(false);
+  };
+
+  const addLog = (text: string, type: 'info' | 'success' | 'warn' | 'error' = 'info') => {
+    const now = new Date();
+    const time = `${now.getHours().toString().padStart(2, '0')}:${now.getMinutes().toString().padStart(2, '0')}:${now.getSeconds().toString().padStart(2, '0')}`;
+    setLiveLogs(prev => [...prev, { time, text, type }]);
+  };
+
   const looks: { id: WebsiteLookId; name: string; colors: string[]; desc: string }[] = [
     { id: 'professional-blue', name: 'Professional Blue', colors: ['#1D4ED8', '#DBEAFE', '#0F172A'], desc: 'Trustworthy, established (Great for trades)' },
     { id: 'local-green', name: 'Local Green', colors: ['#15803D', '#DCFCE7', '#14532D'], desc: 'Reliable, eco-friendly (Great for landscapers, cleaners)' },
@@ -444,6 +616,232 @@ function Step4Brand({ data, update, errors }: any) {
     { id: 'clean-minimal', name: 'Clean Minimal', colors: ['#374151', '#F3F4F6', '#111827'], desc: 'Modern, neutral (Works for anyone)' },
     { id: 'bold-strong', name: 'Bold Strong', colors: ['#B91C1C', '#FEE2E2', '#450A0A'], desc: 'Confident, urgent (Great for emergency services)' },
   ];
+
+  const handleFileUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    setIsCompressing(true);
+    setIsUploadingSupabase(false);
+    setCompressionStats('');
+    setGenError('');
+    setLiveLogs([]);
+    setSupabaseUrl('');
+
+    addLog(`📁 Selected file: "${file.name}" (${(file.size / 1024).toFixed(1)} KB)`, 'info');
+    addLog('⚡ Running Compressor.js client-side image optimization...', 'info');
+
+    new Compressor(file, {
+      quality: 0.6,
+      maxWidth: 800,
+      maxHeight: 800,
+      mimeType: file.type.includes('png') || file.type.includes('svg') ? 'image/png' : 'image/jpeg',
+      async success(compressedResult: Blob | File) {
+        const origKB = (file.size / 1024).toFixed(1);
+        const compKB = (compressedResult.size / 1024).toFixed(1);
+        const savedPct = Math.round((1 - compressedResult.size / file.size) * 100);
+
+        addLog(`⚡ Compressor.js finished! Reduced from ${origKB} KB to ${compKB} KB (${savedPct}% saved)`, 'success');
+        setCompressionStats(`⚡ Compressed with Compressor.js: Reduced from ${origKB} KB to ${compKB} KB (${savedPct}% smaller!)`);
+
+        const reader = new FileReader();
+        reader.readAsDataURL(compressedResult);
+        reader.onloadend = async () => {
+          const base64 = reader.result as string;
+          update('logo_data_url', base64);
+          setIsCompressing(false);
+
+          // Upload to Supabase Storage!
+          setIsUploadingSupabase(true);
+          addLog('☁️ Connecting to Supabase Storage...', 'info');
+          addLog('📦 Uploading compressed image to Supabase cloud bucket...', 'info');
+
+          try {
+            const publicUrl = await uploadLogoToSupabase(compressedResult, `upload_${Date.now()}_${file.name}`);
+            setSupabaseUrl(publicUrl);
+            update('logo_data_url', publicUrl);
+            setIsUploadingSupabase(false);
+            addLog(`✅ Successfully hosted on Supabase Storage: ${publicUrl}`, 'success');
+            toast.success(`Logo compressed (${savedPct}%) & hosted on Supabase!`);
+          } catch (err: any) {
+            setIsUploadingSupabase(false);
+            addLog(`⚠️ Supabase upload note: ${err.message}`, 'warn');
+            addLog('🔒 Using compressed local Data URL as reliable backup!', 'info');
+            toast.success(`Logo compressed by ${savedPct}% and ready!`);
+          }
+        };
+      },
+      error(err) {
+        setIsCompressing(false);
+        addLog(`❌ Compressor.js error: ${err.message}`, 'error');
+        console.error('Compressor error:', err);
+        toast.error('Failed to compress image.');
+      },
+    });
+  };
+
+  const handleGenerateLogo = async () => {
+    if (!data.business_name || !data.occupation) {
+      toast.error('Please enter your Business Name and Occupation in Step 1 first!');
+      return;
+    }
+
+    setIsGenerating(true);
+    setIsCompressing(false);
+    setIsUploadingSupabase(false);
+    setGenError('');
+    setCompressionStats('');
+    setLiveLogs([]);
+    setSupabaseUrl('');
+
+    addLog('🚀 Initializing WEBPRO50 AI (Google Gemini AI) design engine...', 'info');
+    addLog(`🎨 Building logo brief for "${data.business_name}" (${data.occupation})...`, 'info');
+    addLog(`✨ Sending prompt: "${logoPrompt || 'Clean modern emblem representing ' + data.occupation}"...`, 'info');
+
+    const toastId = toast.loading('✨ WEBPRO50 AI is designing your logo...');
+
+    try {
+      const res = await fetch('/api/generate-logo', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          prompt: logoPrompt || `Clean modern emblem representing ${data.occupation}`,
+          business_name: data.business_name,
+          occupation: data.occupation,
+          style: data.selected_website_look,
+          email_address: data.email_address,
+        }),
+      });
+
+      const result = await res.json();
+      if (!res.ok || !result.success) {
+        throw new Error(result.error || 'Failed to generate logo');
+      }
+
+      addLog('🎉 Received raw vector SVG design from WEBPRO50 AI!', 'success');
+      addLog('🖌️ Rendering vector artwork onto HTML5 Canvas for image conversion...', 'info');
+
+      const svgText = result.svg;
+      const svgBlob = new Blob([svgText], { type: 'image/svg+xml;charset=utf-8' });
+      const url = URL.createObjectURL(svgBlob);
+      const img = new Image();
+
+      img.onload = () => {
+        const canvas = document.createElement('canvas');
+        canvas.width = 600;
+        canvas.height = 600;
+        const ctx = canvas.getContext('2d');
+        if (ctx) {
+          ctx.clearRect(0, 0, 600, 600);
+          ctx.drawImage(img, 0, 0, 600, 600);
+          
+          canvas.toBlob((blob) => {
+            if (!blob) {
+              setIsGenerating(false);
+              addLog('❌ Canvas conversion failed.', 'error');
+              return;
+            }
+            const file = new File([blob], 'webpro50-ai-logo.png', { type: 'image/png' });
+
+            setIsCompressing(true);
+            addLog('⚡ Running Compressor.js optimization on AI-generated image...', 'info');
+
+            new Compressor(file, {
+              quality: 0.7,
+              maxWidth: 600,
+              maxHeight: 600,
+              mimeType: 'image/png',
+              async success(compressedResult: Blob | File) {
+                const origKB = (file.size / 1024).toFixed(1);
+                const compKB = (compressedResult.size / 1024).toFixed(1);
+                const savedPct = Math.round((1 - compressedResult.size / file.size) * 100);
+
+                addLog(`⚡ Compressor.js finished! Reduced from ${origKB} KB to ${compKB} KB (${savedPct}% saved)`, 'success');
+                setCompressionStats(`✨ WEBPRO50 AI Generated & 📦 Compressor.js Compressed: Reduced from ${origKB} KB to ${compKB} KB (${savedPct}% saved!)`);
+
+                const reader = new FileReader();
+                reader.readAsDataURL(compressedResult);
+                reader.onloadend = async () => {
+                  const base64 = reader.result as string;
+                  update('logo_data_url', base64);
+                  setIsCompressing(false);
+                  setIsGenerating(false);
+
+                  // Upload AI logo to Supabase Storage!
+                  setIsUploadingSupabase(true);
+                  addLog('☁️ Connecting to Supabase Storage...', 'info');
+                  addLog('📦 Uploading AI logo to Supabase cloud bucket...', 'info');
+
+                  try {
+                    const publicUrl = await uploadLogoToSupabase(compressedResult, `ai_logo_${Date.now()}.png`);
+                    setSupabaseUrl(publicUrl);
+                    update('logo_data_url', publicUrl);
+                    setIsUploadingSupabase(false);
+                    addLog(`✅ Hosted on Supabase Storage: ${publicUrl}`, 'success');
+                    toast.update(toastId, {
+                      render: `🎉 WEBPRO50 AI logo generated, compressed & hosted on Supabase!`,
+                      type: 'success',
+                      isLoading: false,
+                      autoClose: 3500,
+                    });
+                  } catch (err: any) {
+                    setIsUploadingSupabase(false);
+                    addLog(`⚠️ Supabase note: ${err.message}`, 'warn');
+                    addLog('🔒 Using compressed Data URL as reliable backup!', 'info');
+                    toast.update(toastId, {
+                      render: `🎉 WEBPRO50 AI logo generated & compressed by ${savedPct}%!`,
+                      type: 'success',
+                      isLoading: false,
+                      autoClose: 3500,
+                    });
+                  }
+                };
+              },
+              error(err) {
+                setIsCompressing(false);
+                setIsGenerating(false);
+                addLog(`❌ Compression failed: ${err.message}`, 'error');
+                toast.update(toastId, { render: '❌ Compression failed', type: 'error', isLoading: false, autoClose: 3000 });
+              },
+            });
+          }, 'image/png');
+        }
+      };
+      img.onerror = () => {
+        const reader = new FileReader();
+        reader.readAsDataURL(svgBlob);
+        reader.onloadend = async () => {
+          const base64 = reader.result as string;
+          update('logo_data_url', base64);
+          setIsGenerating(false);
+          addLog(`⚡ Using pure Vector SVG (${(svgBlob.size / 1024).toFixed(1)} KB)`, 'success');
+          setCompressionStats(`✨ WEBPRO50 AI Generated Vector SVG Logo (${(svgBlob.size / 1024).toFixed(1)} KB - Ultra Lightweight!)`);
+
+          // Try uploading SVG to Supabase
+          setIsUploadingSupabase(true);
+          addLog('📦 Uploading vector SVG to Supabase Storage...', 'info');
+          try {
+            const publicUrl = await uploadLogoToSupabase(svgBlob, `ai_logo_${Date.now()}.svg`);
+            setSupabaseUrl(publicUrl);
+            update('logo_data_url', publicUrl);
+            setIsUploadingSupabase(false);
+            addLog(`✅ Hosted on Supabase Storage: ${publicUrl}`, 'success');
+          } catch (err: any) {
+            setIsUploadingSupabase(false);
+            addLog(`⚠️ Supabase note: ${err.message}`, 'warn');
+          }
+          toast.update(toastId, { render: '🎉 WEBPRO50 AI vector logo generated!', type: 'success', isLoading: false, autoClose: 3000 });
+        };
+      };
+      img.src = url;
+    } catch (err: any) {
+      console.error('Logo gen error:', err);
+      setGenError(err.message || 'Could not generate logo');
+      setIsGenerating(false);
+      addLog(`❌ Error generating logo: ${err.message}`, 'error');
+      toast.update(toastId, { render: `❌ Error: ${err.message}`, type: 'error', isLoading: false, autoClose: 4000 });
+    }
+  };
 
   return (
     <div className={styles.stepContent}>
@@ -485,18 +883,249 @@ function Step4Brand({ data, update, errors }: any) {
          />
       </div>
 
-      <div className="form-group" style={{ marginTop: 'var(--space-4)' }}>
+      <div className="form-group" style={{ marginTop: 'var(--space-6)' }}>
          <label className="form-checkbox-group">
             <input 
                type="checkbox" 
                checked={data.logo_uploaded}
-               onChange={e => update('logo_uploaded', e.target.checked)}
+               onChange={e => {
+                 const checked = e.target.checked;
+                 update('logo_uploaded', checked);
+                 if (!checked) update('logo_data_url', '');
+               }}
             />
             <span className="form-checkbox-label">
-               <strong>I have a logo</strong>
-               <div className="form-hint">Check this if you have a logo ready to use. We'll ask for it later.</div>
+               <strong>I have a logo (or want to generate one with AI)</strong>
+               <div className="form-hint">Check this to upload your existing logo or generate a new logo using WEBPRO50 AI.</div>
             </span>
          </label>
+
+         {/* ── Logo Upload / WEBPRO50 AI Generate Box ── */}
+         {data.logo_uploaded && (
+           <div className={styles.logoSection}>
+             <div className={styles.logoTabs}>
+               <button
+                 type="button"
+                 className={`${styles.logoTabBtn} ${activeTab === 'upload' ? styles.logoTabBtnActive : ''}`}
+                 onClick={() => setActiveTab('upload')}
+               >
+                 <Upload size={16} />
+                 📁 Upload Existing Image
+               </button>
+               <button
+                 type="button"
+                 className={`${styles.logoTabBtn} ${activeTab === 'generate' ? styles.logoTabBtnActive : ''}`}
+                 onClick={() => setActiveTab('generate')}
+               >
+                 <Sparkles size={16} />
+                 ✨ Generate Logo (WEBPRO50 AI)
+               </button>
+             </div>
+
+             <div className={styles.logoTabContent}>
+               {activeTab === 'upload' ? (
+                 <div>
+                   <label className={styles.uploadArea}>
+                     <input
+                       type="file"
+                       accept="image/*"
+                       style={{ display: 'none' }}
+                       onChange={handleFileUpload}
+                     />
+                     <ImageIcon size={32} style={{ margin: '0 auto 8px', color: 'var(--color-primary)' }} />
+                     <div style={{ fontWeight: 600, color: 'var(--color-gray-800)' }}>
+                       Click to upload your logo image
+                     </div>
+                     <div style={{ fontSize: 'var(--text-xs)', color: 'var(--color-gray-500)', marginTop: 4 }}>
+                       PNG, JPG, WEBP or SVG — Automatically compressed & uploaded to Supabase
+                     </div>
+                   </label>
+                 </div>
+               ) : (
+                 <div>
+                   <div style={{ marginBottom: '12px' }}>
+                     <label className="form-label" style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
+                       <Sparkles size={14} color="var(--color-primary)" />
+                       Describe your desired logo:
+                     </label>
+                     <input
+                       type="text"
+                       className="form-input"
+                       value={logoPrompt}
+                       onChange={e => setLogoPrompt(e.target.value)}
+                       placeholder={`e.g. Minimalist emblem for ${data.business_name || 'my business'}, professional ${data.occupation || 'services'}`}
+                     />
+                     <div className="form-hint" style={{ marginTop: 4 }}>
+                       WEBPRO50 AI will design a vector logo, Compressor.js will compress it, and Supabase will host it.
+                     </div>
+                   </div>
+
+                   {genError && (
+                     <div className="form-error" style={{ marginBottom: 10 }}>
+                       ❌ Error: {genError}
+                     </div>
+                   )}
+
+                   <button
+                     type="button"
+                     className="btn btn-primary"
+                     style={{ width: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8 }}
+                     onClick={handleGenerateLogo}
+                     disabled={isGenerating || isCompressing || isUploadingSupabase}
+                   >
+                     {isGenerating || isCompressing || isUploadingSupabase ? (
+                       <>
+                         <Loader2 size={16} className={styles.spinnerIcon} />
+                         {isGenerating ? 'Designing with WEBPRO50 AI...' : isCompressing ? 'Compressing image...' : 'Uploading to Supabase...'}
+                       </>
+                     ) : (
+                       <>
+                         <Sparkles size={16} />
+                         Generate Logo with WEBPRO50 AI
+                       </>
+                     )}
+                   </button>
+                 </div>
+               )}
+
+               {/* ── Live Log Terminal Box ── */}
+               {liveLogs.length > 0 && (
+                 <div className={styles.logTerminal}>
+                   <div className={styles.logTerminalHeader}>
+                     <div className={styles.logTerminalDots}>
+                       <span style={{ background: '#ef4444' }} />
+                       <span style={{ background: '#f59e0b' }} />
+                       <span style={{ background: '#10b981' }} />
+                     </div>
+                     <span className={styles.logTerminalTitle}>⚡ Live Generation & Upload Logs</span>
+                     {isGenerating || isCompressing || isUploadingSupabase ? <Loader2 size={14} className={styles.spinnerIcon} color="#38bdf8" /> : <CheckCircle2 size={14} color="#10b981" />}
+                   </div>
+                   <div className={styles.logTerminalBody}>
+                     {liveLogs.map((log, idx) => (
+                       <div key={idx} className={`${styles.logLine} ${styles['log_' + log.type]}`}>
+                         <span className={styles.logTime}>[{log.time}]</span>
+                         <span className={styles.logText}>{log.text}</span>
+                       </div>
+                     ))}
+                   </div>
+                 </div>
+               )}
+
+               {/* ── Compression Stats Badge ── */}
+               {(isCompressing || isUploadingSupabase || compressionStats) && (
+                 <div style={{ textAlign: 'center', marginTop: 12 }}>
+                   {isCompressing || isUploadingSupabase ? (
+                     <div className={styles.compressionBadge} style={{ background: '#eff6ff', borderColor: '#3b82f6', color: '#1d4ed8' }}>
+                       <Loader2 size={14} className={styles.spinnerIcon} />
+                       {isCompressing ? 'Running Compressor.js image compression...' : 'Uploading to Supabase Storage...'}
+                     </div>
+                   ) : (
+                     <div className={styles.compressionBadge}>
+                       <Zap size={14} />
+                       {compressionStats}
+                     </div>
+                   )}
+                 </div>
+               )}
+
+               {/* ── Logo Preview ── */}
+               {data.logo_data_url && (
+                 <div className={styles.logoPreviewBox}>
+                   <div style={{ fontSize: 'var(--text-xs)', fontWeight: 600, color: 'var(--color-gray-600)', display: 'flex', alignItems: 'center', gap: 6, flexWrap: 'wrap', justifyContent: 'center' }}>
+                     <CheckCircle2 size={14} color="#10b981" /> Active Website Logo
+                     {data.logo_data_url.includes('supabase.co') && (
+                       <span style={{ background: '#ecfdf5', border: '1px solid #10b981', color: '#047857', padding: '2px 8px', borderRadius: 12, fontSize: 10 }}>
+                         🟢 Hosted on Supabase Storage
+                       </span>
+                     )}
+                   </div>
+                   <img
+                     src={data.logo_data_url}
+                     alt="Logo Preview"
+                     className={styles.logoPreviewImg}
+                   />
+                 </div>
+               )}
+
+               {/* ── Business Photos Upload Option ── */}
+               <div style={{ marginTop: 'var(--space-6)', borderTop: '1px solid var(--color-gray-200)', paddingTop: 'var(--space-6)' }}>
+                 <label className="checkbox-label" style={{ fontWeight: 600, color: 'var(--color-gray-900)' }}>
+                   <input
+                     type="checkbox"
+                     checked={data.photos_uploaded}
+                     onChange={e => update('photos_uploaded', e.target.checked)}
+                   />
+                   <span>I have photos of my business, work, or team to use on the website</span>
+                 </label>
+                 <p className="form-hint" style={{ marginTop: 4, marginLeft: 28 }}>
+                   Upload your own images so we can feature them in the Hero, About, or Service sections!
+                 </p>
+
+                 {data.photos_uploaded && (
+                   <div style={{ marginTop: 'var(--space-4)', marginLeft: 28 }}>
+                     <label className={styles.uploadArea}>
+                       <input
+                         type="file"
+                         accept="image/*"
+                         multiple
+                         style={{ display: 'none' }}
+                         onChange={handlePhotoUpload}
+                       />
+                       <ImageIcon size={32} style={{ margin: '0 auto 8px', color: 'var(--color-primary)' }} />
+                       <div style={{ fontWeight: 600, color: 'var(--color-gray-800)' }}>
+                         Click or drag &amp; drop to upload business photos
+                       </div>
+                       <div style={{ fontSize: 'var(--text-xs)', color: 'var(--color-gray-500)', marginTop: 4 }}>
+                         Select multiple JPG, PNG, or WEBP files — Automatically compressed &amp; hosted on Supabase
+                       </div>
+                     </label>
+
+                     {(isCompressingPhoto || isUploadingPhoto || photoStats) && (
+                       <div style={{ textAlign: 'center', marginTop: 12 }}>
+                         {isCompressingPhoto || isUploadingPhoto ? (
+                           <div className={styles.compressionBadge} style={{ background: '#eff6ff', borderColor: '#3b82f6', color: '#1d4ed8' }}>
+                             <Loader2 size={14} className={styles.spinnerIcon} />
+                             {isCompressingPhoto ? 'Compressing photo with Compressor.js...' : 'Uploading photo to Supabase Storage...'}
+                           </div>
+                         ) : (
+                           <div className={styles.compressionBadge}>
+                             <Zap size={14} />
+                             {photoStats}
+                           </div>
+                         )}
+                       </div>
+                     )}
+
+                     {data.uploaded_photos_urls && data.uploaded_photos_urls.length > 0 && (
+                       <div style={{ marginTop: 16 }}>
+                         <div style={{ fontSize: 'var(--text-xs)', fontWeight: 600, color: 'var(--color-gray-700)', marginBottom: 8, display: 'flex', alignItems: 'center', gap: 6 }}>
+                           <CheckCircle2 size={14} color="#10b981" /> {data.uploaded_photos_urls.length} Photo(s) Ready for Your Website:
+                         </div>
+                         <div style={{ display: 'flex', gap: 10, flexWrap: 'wrap' }}>
+                           {data.uploaded_photos_urls.map((url: string, idx: number) => (
+                             <div key={idx} style={{ position: 'relative', width: 80, height: 80, borderRadius: 8, overflow: 'hidden', border: '1px solid var(--color-gray-300)', background: '#fff' }}>
+                               <img src={url} alt={`Uploaded ${idx + 1}`} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+                               <button
+                                 type="button"
+                                 onClick={() => {
+                                   const next = data.uploaded_photos_urls.filter((_: any, i: number) => i !== idx);
+                                   update('uploaded_photos_urls', next);
+                                 }}
+                                 style={{ position: 'absolute', top: 4, right: 4, background: 'rgba(0,0,0,0.6)', color: '#fff', border: 'none', borderRadius: '50%', width: 20, height: 20, cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 12 }}
+                               >
+                                 ✕
+                               </button>
+                             </div>
+                           ))}
+                         </div>
+                       </div>
+                     )}
+                   </div>
+                 )}
+               </div>
+             </div>
+           </div>
+         )}
       </div>
     </div>
   );

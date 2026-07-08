@@ -3,7 +3,7 @@
 // Used by the preview page to load the website into an iframe via srcDoc.
 
 import { NextRequest, NextResponse } from 'next/server';
-import { prisma } from '@/lib/prisma';
+import { prisma, withPrismaRetry } from '@/lib/prisma';
 
 export async function GET(
   _req: NextRequest,
@@ -16,34 +16,69 @@ export async function GET(
   }
 
   try {
-    const submission = await prisma.websiteSubmission.findFirst({
-      where: { previewId: id },
-      select: {
-        generatedHtml: true,
-        business_name: true,
-        occupation: true,
-        contact_number_to_show: true,
-        contact_email_to_show: true,
-        service_area: true,
-        selected_website_look: true,
-        main_cta: true,
-        insurance: true,
-        emergency_service: true,
-        differentiator: true,
-        guarantees: true,
-        qualifications: true,
-        testimonials_on_site: true,
-        contact_form: true,
-        google_maps: true,
-        google_listing_option: true,
-        branded_domain_option: true,
-        years_in_business: true,
-        main_services: true,
-        seo_keywords: true,
-        main_city: true,
-        full_service_area: true,
-      },
-    });
+    let submission: any = null;
+    try {
+      submission = await withPrismaRetry(() => prisma.websiteSubmission.findFirst({
+        where: { previewId: id },
+        select: {
+          generatedHtml: true,
+          business_name: true,
+          occupation: true,
+          contact_number_to_show: true,
+          contact_email_to_show: true,
+          service_area: true,
+          selected_website_look: true,
+          main_cta: true,
+          insurance: true,
+          emergency_service: true,
+          differentiator: true,
+          guarantees: true,
+          qualifications: true,
+          testimonials_on_site: true,
+          contact_form: true,
+          google_maps: true,
+          google_listing_option: true,
+          branded_domain_option: true,
+          years_in_business: true,
+          main_services: true,
+          seo_keywords: true,
+          main_city: true,
+          full_service_area: true,
+          logo_data_url: true,
+          uploaded_photos_urls: true,
+        },
+      }));
+    } catch (dbError: any) {
+      console.warn('[PROSERVICE] Prisma query with logo/photos failed (outdated schema/cache), retrying without extra fields:', dbError.message);
+      submission = await withPrismaRetry(() => prisma.websiteSubmission.findFirst({
+        where: { previewId: id },
+        select: {
+          generatedHtml: true,
+          business_name: true,
+          occupation: true,
+          contact_number_to_show: true,
+          contact_email_to_show: true,
+          service_area: true,
+          selected_website_look: true,
+          main_cta: true,
+          insurance: true,
+          emergency_service: true,
+          differentiator: true,
+          guarantees: true,
+          qualifications: true,
+          testimonials_on_site: true,
+          contact_form: true,
+          google_maps: true,
+          google_listing_option: true,
+          branded_domain_option: true,
+          years_in_business: true,
+          main_services: true,
+          seo_keywords: true,
+          main_city: true,
+          full_service_area: true,
+        },
+      }));
+    }
 
     if (!submission) {
       return NextResponse.json({ error: 'Preview not found' }, { status: 404 });
@@ -108,6 +143,8 @@ export async function GET(
         seo_keywords: submission.seo_keywords,
         main_city: submission.main_city,
         full_service_area: submission.full_service_area,
+        logo_data_url: submission.logo_data_url || null,
+        uploaded_photos_urls: submission.uploaded_photos_urls || null,
       },
     });
   } catch (error) {
