@@ -87,13 +87,20 @@
 
 .actionBarInner {
   display: flex;
+  flex-direction: row;
   align-items: center;
+  justify-content: space-between;
   gap: 1rem;
-  max-width: 100%;
+  width: 100%;
+  flex-wrap: nowrap;
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
 }
 
 .actionBarLeft {
-  flex: 1;
+  display: flex;
+  flex-direction: column;
+  flex-shrink: 0;
 }
 
 .actionBarTitle {
@@ -109,9 +116,11 @@
 
 .actionBarRight {
   display: flex;
-  gap: 0.75rem;
+  flex-direction: row;
+  gap: 0.5rem;
   align-items: center;
   flex-shrink: 0;
+  flex-wrap: nowrap;
 }
 
 /* ── View mode toggle ── */
@@ -354,14 +363,26 @@
 
 .mockHeader {
   display: flex;
+  flex-direction: row;
   justify-content: space-between;
   align-items: center;
+  flex-wrap: nowrap;
   padding: 1rem 2rem;
   border-bottom: 1px solid #f0f0f0;
   position: sticky;
   top: 0;
   background: white;
   z-index: 10;
+  gap: 1.5rem;
+  width: 100%;
+}
+
+.mockLogoWrap {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  width: auto;
+  flex-shrink: 0;
 }
 
 .mockLogo {
@@ -734,6 +755,9 @@
     gap: 0;
     justify-content: space-between !important;
   }
+  .mockLogoWrap {
+    width: 100% !important;
+  }
   .mockHamburgerBtn {
     display: inline-flex !important;
   }
@@ -788,6 +812,9 @@
     padding: 0.6rem 1rem !important;
     gap: 0;
     justify-content: space-between !important;
+  }
+  .mockLogoWrap {
+    width: 100% !important;
   }
   .mockHamburgerBtn {
     display: inline-flex !important;

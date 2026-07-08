@@ -106,6 +106,7 @@ MAP REQUIREMENTS — MANDATORY
 
 FUNCTIONAL REQUIREMENTS
 - Responsive design (mobile-first)
+- HEADER & NAVBAR ALIGNMENT RULE: The website header (<header> or <nav>) MUST be responsive and flexbox-aligned. On desktop and tablet viewports, the logo/brand name, the navigation anchor links, and the call-to-action button MUST ALL BE IN THE SAME HORIZONTAL ROW (display: flex; justify-content: space-between; align-items: center; flex-wrap: nowrap; gap: 1.5rem;). On mobile viewports (< 768px), use a clean hamburger toggle or vertical collapse.
 - INTERACTIVITY & NAVIGATION RULE: To ensure smooth scrolling and interactivity when clicking navbar links:
   1. Every major section MUST have an ID: <section id="services">, <section id="about">, <section id="pricing">, <section id="why-us">, <section id="location">, <section id="gallery">, <section id="faq">, <section id="contact">.
   2. Navbar links MUST be valid anchor links pointing to those IDs: <a href="#services">Services</a>, <a href="#about">About</a>, <a href="#pricing">Pricing</a>, <a href="#faq">FAQ</a>, <a href="#contact">Contact</a>.

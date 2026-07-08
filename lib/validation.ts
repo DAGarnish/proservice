@@ -109,6 +109,18 @@ export function validateStepByIndex(stepIndex: number, data: any): StepErrors {
   }
 }
 
+export function validateAllSteps(data: any): StepErrors {
+  return {
+    ...validateStep1(data),
+    ...validateStep2(data),
+    ...validateStep3(data),
+    ...validateStep4(data),
+    ...validateStep5(data),
+    ...validateStep6(data),
+    ...validateStep7(data),
+  };
+}
+
 export function hasErrors(errors: StepErrors): boolean {
   return Object.keys(errors).length > 0;
 }

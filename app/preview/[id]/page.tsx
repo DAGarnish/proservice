@@ -521,7 +521,7 @@ function FallbackMockup({ brief, palette }: { brief: BriefSnippet; palette: { pr
     >
       {/* Mock Header */}
       <header className={styles.mockHeader}>
-        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', width: '100%' }}>
+        <div className={styles.mockLogoWrap}>
           {brief.logo_data_url ? (
             <img src={brief.logo_data_url} alt={brief.business_name} style={{ maxHeight: '42px', maxWidth: '180px', objectFit: 'contain' }} />
           ) : (

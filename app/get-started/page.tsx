@@ -6,49 +6,38 @@
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { defaultFormData, FormData, WebsiteLookId } from '@/types/form';
-import { validateStepByIndex, hasErrors, StepErrors } from '@/lib/validation';
+import { validateAllSteps, hasErrors, StepErrors } from '@/lib/validation';
 import { toast } from 'react-toastify';
 import Compressor from 'compressorjs';
 import { Upload, Sparkles, Image as ImageIcon, Zap, CheckCircle2, Loader2 } from 'lucide-react';
 import { uploadLogoToSupabase } from '@/lib/supabaseClient';
 import styles from './get-started.module.css';
 
-const TOTAL_STEPS = 7;
-
 export default function GetStartedPage() {
   const router = useRouter();
   
-  const [currentStep, setCurrentStep] = useState(0);
   const [formData, setFormData] = useState<FormData>(defaultFormData);
   const [errors, setErrors] = useState<StepErrors>({});
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [submitError, setSubmitError] = useState('');
   const [buildLogs, setBuildLogs] = useState<Array<{ time: string; text: string; type: 'info' | 'success' | 'warn' | 'error' }>>([]);
 
-  const handleNext = () => {
-    const stepErrors = validateStepByIndex(currentStep, formData);
+  const handleBuildWebsite = () => {
+    const allErrors = validateAllSteps(formData);
     
-    if (hasErrors(stepErrors)) {
-      setErrors(stepErrors);
-      toast.error('Please fill in all required fields before continuing.');
+    if (hasErrors(allErrors)) {
+      setErrors(allErrors);
+      toast.error('Please check the highlighted required fields above.');
+      const firstErrorField = Object.keys(allErrors)[0];
+      const el = document.querySelector(`[name="${firstErrorField}"]`) || document.querySelector('.error') || document.querySelector('.form-error');
+      if (el) {
+        el.scrollIntoView({ behavior: 'smooth', block: 'center' });
+      }
       return;
     }
 
     setErrors({});
-    if (currentStep < TOTAL_STEPS - 1) {
-      setCurrentStep(curr => curr + 1);
-      window.scrollTo({ top: 0, behavior: 'smooth' });
-    } else {
-      handleSubmit();
-    }
-  };
-
-  const handleBack = () => {
-    if (currentStep > 0) {
-      setCurrentStep(curr => curr - 1);
-      setErrors({});
-      window.scrollTo({ top: 0, behavior: 'smooth' });
-    }
+    handleSubmit();
   };
 
   const updateField = (field: keyof FormData, value: any) => {
@@ -164,81 +153,91 @@ export default function GetStartedPage() {
     }
   };
 
-  const stepTitles = [
-    'Business Basics',
-    'Services',
-    'Trust & Credibility',
-    'Brand & Style',
-    'SEO & Location',
-    'Conversion Details',
-    'Add-ons & Final Details'
-  ];
-
   return (
     <div className={styles.pageContainer}>
-      <div className="container">
+      <div className="container" style={{ maxWidth: '820px', margin: '0 auto' }}>
         
-        {/* Stepper Header */}
-        <div className={styles.stepperHeader}>
-           <div className={styles.progressBarContainer}>
-              <div 
-                 className={styles.progressBarFill} 
-                 style={{ width: `${((currentStep + 1) / TOTAL_STEPS) * 100}%` }} 
-              />
-           </div>
-           <div className={styles.stepIndicator}>
-              Step {currentStep + 1} of {TOTAL_STEPS}: {stepTitles[currentStep]}
-           </div>
+        {/* Page Header Banner */}
+        <div className={styles.pageHeaderBanner}>
+          <h1>Complete Your Business Profile &amp; Build Your Website</h1>
+          <p>
+            Fill out the form below from top to bottom. Our AI Studio will use your answers to design, write, and deploy your custom interactive website in seconds.
+          </p>
         </div>
 
-        {/* Form Container */}
-        <div className={styles.formContainer}>
-          {submitError && (
-             <div className="alert alert-error" style={{ marginBottom: 'var(--space-6)' }}>
-                <strong>Error:</strong> {submitError}
-             </div>
-          )}
+        {submitError && (
+          <div className="alert alert-error" style={{ marginBottom: 'var(--space-6)' }}>
+            <strong>Error:</strong> {submitError}
+          </div>
+        )}
 
-          {/* Steps Content */}
-          {currentStep === 0 && (
+        {/* All 7 Steps Sequentially on Single Page */}
+        <div style={{ display: 'flex', flexDirection: 'column', gap: '2.5rem' }}>
+          
+          <div id="step-1" className={styles.singlePageSection}>
+            <div className={styles.sectionNumberBadge}>1. Business Basics</div>
             <Step1BusinessBasics data={formData} update={updateField} errors={errors} />
-          )}
-          {currentStep === 1 && (
-            <Step2Services data={formData} update={updateField} errors={errors} />
-          )}
-          {currentStep === 2 && (
-            <Step3Trust data={formData} update={updateField} errors={errors} />
-          )}
-          {currentStep === 3 && (
-            <Step4Brand data={formData} update={updateField} errors={errors} />
-          )}
-          {currentStep === 4 && (
-            <Step5SEO data={formData} update={updateField} errors={errors} />
-          )}
-          {currentStep === 5 && (
-            <Step6Conversion data={formData} update={updateField} errors={errors} />
-          )}
-          {currentStep === 6 && (
-            <Step7AddOns data={formData} update={updateField} errors={errors} />
-          )}
+          </div>
 
-          {/* Navigation Buttons */}
-          <div className={styles.navButtons}>
-            <button 
-               className="btn btn-ghost" 
-               onClick={handleBack} 
-               disabled={currentStep === 0 || isSubmitting}
+          <div id="step-2" className={styles.singlePageSection}>
+            <div className={styles.sectionNumberBadge}>2. Your Services</div>
+            <Step2Services data={formData} update={updateField} errors={errors} />
+          </div>
+
+          <div id="step-3" className={styles.singlePageSection}>
+            <div className={styles.sectionNumberBadge}>3. Trust &amp; Credibility</div>
+            <Step3Trust data={formData} update={updateField} errors={errors} />
+          </div>
+
+          <div id="step-4" className={styles.singlePageSection}>
+            <div className={styles.sectionNumberBadge}>4. Brand &amp; Style</div>
+            <Step4Brand data={formData} update={updateField} errors={errors} />
+          </div>
+
+          <div id="step-5" className={styles.singlePageSection}>
+            <div className={styles.sectionNumberBadge}>5. SEO &amp; Location</div>
+            <Step5SEO data={formData} update={updateField} errors={errors} />
+          </div>
+
+          <div id="step-6" className={styles.singlePageSection}>
+            <div className={styles.sectionNumberBadge}>6. Website Features</div>
+            <Step6Conversion data={formData} update={updateField} errors={errors} />
+          </div>
+
+          <div id="step-7" className={styles.singlePageSection}>
+            <div className={styles.sectionNumberBadge}>7. Add-ons &amp; Final Details</div>
+            <Step7AddOns data={formData} update={updateField} errors={errors} />
+          </div>
+
+          {/* Submit Action Card */}
+          <div className={styles.submitActionCard}>
+            <div>
+              <h3 style={{ fontSize: '1.6rem', fontWeight: 800, marginBottom: '8px', color: '#fff' }}>Ready to Launch Your AI Website?</h3>
+              <p style={{ color: '#94a3b8', fontSize: '1.05rem', maxWidth: '540px', margin: '0 auto' }}>
+                Click below to let WEBPRO50 AI compile your brand colors, custom logo, services, interactive Google Map, and contact forms.
+              </p>
+            </div>
+            <button
+              type="button"
+              className="btn btn-primary"
+              style={{ padding: '1rem 2.5rem', fontSize: '1.2rem', fontWeight: 700, borderRadius: '12px', display: 'inline-flex', alignItems: 'center', gap: '10px', boxShadow: '0 10px 25px -5px rgba(59, 130, 246, 0.5)' }}
+              onClick={handleBuildWebsite}
+              disabled={isSubmitting}
             >
-              Back
-            </button>
-            <button 
-               className="btn btn-primary" 
-               onClick={handleNext}
-               disabled={isSubmitting}
-            >
-              {isSubmitting ? 'Generating...' : (currentStep === TOTAL_STEPS - 1 ? 'Build My Website' : 'Continue')}
+              {isSubmitting ? (
+                <>
+                  <Loader2 size={22} className={styles.spinnerIcon} />
+                  Generating Your Website...
+                </>
+              ) : (
+                <>
+                  <Sparkles size={22} />
+                  Build My Website Now
+                </>
+              )}
             </button>
           </div>
+
         </div>
 
         {/* ── Live Build Generation Terminal Modal ── */}
