@@ -32,7 +32,15 @@ export async function uploadLogoToSupabase(
   const filename =
     customFilename || `logo_${Date.now()}_${Math.random().toString(36).substring(2, 8)}.${ext}`;
 
-  const bucketsToTry = ['webpro50', 'logos', 'public', 'website-logos', 'images'];
+  const bucketsToTry = [
+    process.env.NEXT_PUBLIC_SUPABASE_BUCKET,
+    'webpro50',
+    'logos',
+    'public',
+    'website-logos',
+    'images',
+    'assets',
+  ].filter(Boolean) as string[];
   let lastError: any = null;
 
   for (const bucket of bucketsToTry) {

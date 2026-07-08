@@ -14,8 +14,8 @@ const emailStore = new Map<string, RateLimitRecord>();
 const duplicateStore = new Map<string, number>(); // key → timestamp
 
 const WINDOW_MS = (parseInt(process.env.RATE_LIMIT_WINDOW_HOURS || '24')) * 60 * 60 * 1000;
-const MAX_PER_IP = parseInt(process.env.RATE_LIMIT_PER_IP || '3');
-const MAX_PER_EMAIL = parseInt(process.env.RATE_LIMIT_PER_EMAIL || '1');
+const MAX_PER_IP = parseInt(process.env.RATE_LIMIT_PER_IP || '50');
+const MAX_PER_EMAIL = parseInt(process.env.RATE_LIMIT_PER_EMAIL || '20');
 
 function cleanExpired(store: Map<string, RateLimitRecord>) {
   const now = Date.now();
@@ -32,7 +32,18 @@ export interface RateLimitResult {
   retryAfterMs?: number;
 }
 
+export function clearRateLimits() {
+  ipStore.clear();
+  emailStore.clear();
+  duplicateStore.clear();
+}
+
 export function checkRateLimit(ip: string, email: string, businessName: string): RateLimitResult {
+  // If in development mode or explicitly disabled via env, allow all requests
+  if (process.env.NODE_ENV === 'development' || process.env.DISABLE_RATE_LIMIT === 'true') {
+    return { allowed: true };
+  }
+
   cleanExpired(ipStore);
   cleanExpired(emailStore);
 
@@ -57,19 +68,19 @@ export function checkRateLimit(ip: string, email: string, businessName: string):
     if (now - emailRecord.firstRequest < WINDOW_MS && emailRecord.count >= MAX_PER_EMAIL) {
       return {
         allowed: false,
-        reason: `A preview for this email address has already been generated. Contact us if you need another.`,
+        reason: `Too many preview requests for this email address. Please try again later.`,
         retryAfterMs: WINDOW_MS - (now - emailRecord.firstRequest),
       };
     }
   }
 
-  // 3. Duplicate block (same email + business name within 1 hour)
+  // 3. Duplicate block (same email + business name within 15 seconds to prevent accidental double clicks)
   const dupKey = `${emailNorm}:${businessName.toLowerCase().trim()}`;
   const dupTimestamp = duplicateStore.get(dupKey);
-  if (dupTimestamp && now - dupTimestamp < 60 * 60 * 1000) {
+  if (dupTimestamp && now - dupTimestamp < 15 * 1000) {
     return {
       allowed: false,
-      reason: `A preview for this business is already being processed. Please wait a moment.`,
+      reason: `A preview for this business is already being generated right now. Please wait a moment.`,
     };
   }
 
