@@ -35,10 +35,36 @@ export function enhanceGeneratedHtml(
     modified = replaced;
   }
 
-  // 2. Replace placeholder images with uploaded business photos if provided
+  // 2. Guarantee Uploaded Image is Featured in the Hero Section & Replace Placeholders
   if (photoUrls && photoUrls.length > 0) {
+    const mainHeroPhoto = photoUrls[0];
+
+    // Check and inject into Hero Section specifically
+    let heroModified = false;
+    if (/(<section[^>]*(?:id|class)=["'][^"']*hero[^"']*["'][^>]*>)([\s\S]*?)(<\/section>)/i.test(modified)) {
+      modified = modified.replace(/(<section[^>]*(?:id|class)=["'][^"']*hero[^"']*["'][^>]*>)([\s\S]*?)(<\/section>)/i, (match, openTag, heroContent, closeTag) => {
+        heroModified = true;
+        // If hero already has an img, ensure the first img src is mainHeroPhoto
+        if (/<img[^>]*src=["'][^"']*["']/i.test(heroContent)) {
+          let replacedFirstImg = false;
+          const newHeroContent = heroContent.replace(/(<img[^>]*src=["'])([^"']*)(["'][^>]*>)/gi, (m: string, p1: string, oldSrc: string, p2: string) => {
+            if (!replacedFirstImg && (!logoUrl || oldSrc !== logoUrl)) {
+              replacedFirstImg = true;
+              return `${p1}${mainHeroPhoto}${p2}`;
+            }
+            return m;
+          });
+          return `${openTag}${newHeroContent}${closeTag}`;
+        } else {
+          // If hero has no img, inject a hero banner image box
+          const heroBannerBox = `\n  <div style="margin-top: 2rem; border-radius: 16px; overflow: hidden; box-shadow: 0 20px 25px -5px rgba(0,0,0,0.3); max-height: 480px; border: 4px solid rgba(255,255,255,0.2);"><img src="${mainHeroPhoto}" alt="${bName} Hero Banner" style="width: 100%; height: 100%; object-fit: cover; display: block;" /></div>\n`;
+          return `${openTag}${heroContent}${heroBannerBox}${closeTag}`;
+        }
+      });
+    }
+
     let photoIdx = 0;
-    // Replace any image URL (placeholder, relative, external, or mock) that is NOT the logo and NOT already an uploaded photo
+    // Replace any remaining image URLs (placeholder, relative, external, or mock) across the document
     modified = modified.replace(/(<img[^>]*src=["'])([^"']*)(["'])/gi, (match, prefix, oldUrl, suffix) => {
       if (logoUrl && oldUrl === logoUrl) return match;
       if (photoUrls.includes(oldUrl)) return match;
@@ -49,7 +75,7 @@ export function enhanceGeneratedHtml(
       return `${prefix}${newUrl}${suffix}`;
     });
 
-    // If none of the uploaded photos ended up in the document (or if there were no img tags), inject a gallery section
+    // If none of the uploaded photos ended up in the document (or if there were no img tags at all), inject a gallery section
     const hasUploadedPhoto = photoUrls.some(url => modified.includes(url));
     if (!hasUploadedPhoto) {
       const galleryHtml = `

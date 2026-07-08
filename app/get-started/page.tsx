@@ -190,22 +190,27 @@ export default function GetStartedPage() {
           </div>
 
           <div id="step-4" className={styles.singlePageSection}>
-            <div className={styles.sectionNumberBadge}>4. Brand &amp; Style</div>
+            <div className={styles.sectionNumberBadge}>4. Brand &amp; Style (Logo &amp; Colors)</div>
             <Step4Brand data={formData} update={updateField} errors={errors} />
           </div>
 
+          <div id="step-hero-photo" className={styles.singlePageSection}>
+            <div className={styles.sectionNumberBadge}>5. Hero Image &amp; Business Photos</div>
+            <StepHeroPhoto data={formData} update={updateField} />
+          </div>
+
           <div id="step-5" className={styles.singlePageSection}>
-            <div className={styles.sectionNumberBadge}>5. SEO &amp; Location</div>
+            <div className={styles.sectionNumberBadge}>6. SEO &amp; Location</div>
             <Step5SEO data={formData} update={updateField} errors={errors} />
           </div>
 
           <div id="step-6" className={styles.singlePageSection}>
-            <div className={styles.sectionNumberBadge}>6. Website Features</div>
+            <div className={styles.sectionNumberBadge}>7. Website Features</div>
             <Step6Conversion data={formData} update={updateField} errors={errors} />
           </div>
 
           <div id="step-7" className={styles.singlePageSection}>
-            <div className={styles.sectionNumberBadge}>7. Add-ons &amp; Final Details</div>
+            <div className={styles.sectionNumberBadge}>8. Add-ons &amp; Final Details</div>
             <Step7AddOns data={formData} update={updateField} errors={errors} />
           </div>
 
@@ -534,72 +539,6 @@ function Step4Brand({ data, update, errors }: any) {
   const [liveLogs, setLiveLogs] = useState<Array<{ time: string; text: string; type: 'info' | 'success' | 'warn' | 'error' }>>([]);
   const [isUploadingSupabase, setIsUploadingSupabase] = useState(false);
   const [supabaseUrl, setSupabaseUrl] = useState<string>('');
-  const [isCompressingPhoto, setIsCompressingPhoto] = useState(false);
-  const [isUploadingPhoto, setIsUploadingPhoto] = useState(false);
-  const [photoStats, setPhotoStats] = useState<string>('');
-
-  const handlePhotoUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
-    const files = e.target.files;
-    if (!files || files.length === 0) return;
-
-    setIsCompressingPhoto(true);
-    setIsUploadingPhoto(false);
-    setPhotoStats('');
-    
-    const currentUrls = Array.isArray(data.uploaded_photos_urls) ? [...data.uploaded_photos_urls] : [];
-
-    for (let i = 0; i < files.length; i++) {
-      const file = files[i];
-      addLog(`📁 Selected photo [${i + 1}/${files.length}]: "${file.name}" (${(file.size / 1024).toFixed(1)} KB)`, 'info');
-      addLog('⚡ Running Compressor.js client-side optimization on photo...', 'info');
-
-      await new Promise<void>((resolve) => {
-        new Compressor(file, {
-          quality: 0.65,
-          maxWidth: 1200,
-          maxHeight: 1200,
-          mimeType: file.type.includes('png') ? 'image/png' : 'image/jpeg',
-          async success(compressedResult: Blob | File) {
-            const origKB = (file.size / 1024).toFixed(1);
-            const compKB = (compressedResult.size / 1024).toFixed(1);
-            const savedPct = Math.round((1 - compressedResult.size / file.size) * 100);
-
-            addLog(`⚡ Photo compressed! Reduced from ${origKB} KB to ${compKB} KB (${savedPct}% saved)`, 'success');
-            setPhotoStats(`⚡ Last photo compressed by ${savedPct}% (${origKB} KB ➔ ${compKB} KB)`);
-
-            setIsUploadingPhoto(true);
-            addLog('📦 Uploading compressed photo to Supabase cloud bucket...', 'info');
-
-            try {
-              const publicUrl = await uploadLogoToSupabase(compressedResult, `photo_${Date.now()}_${i}_${file.name}`);
-              currentUrls.push(publicUrl);
-              update('uploaded_photos_urls', [...currentUrls]);
-              addLog(`✅ Photo hosted on Supabase: ${publicUrl}`, 'success');
-              toast.success(`Photo #${i + 1} compressed & hosted on Supabase!`);
-            } catch (err: any) {
-              addLog(`⚠️ Supabase photo upload fallback note: ${err.message}`, 'warn');
-              const reader = new FileReader();
-              reader.readAsDataURL(compressedResult);
-              reader.onloadend = () => {
-                const base64 = reader.result as string;
-                currentUrls.push(base64);
-                update('uploaded_photos_urls', [...currentUrls]);
-                addLog('🔒 Stored photo as compressed Data URL backup!', 'info');
-              };
-            }
-            setIsUploadingPhoto(false);
-            resolve();
-          },
-          error(err) {
-            addLog(`❌ Photo compression error: ${err.message}`, 'error');
-            toast.error('Failed to compress photo.');
-            resolve();
-          },
-        });
-      });
-    }
-    setIsCompressingPhoto(false);
-  };
 
   const addLog = (text: string, type: 'info' | 'success' | 'warn' | 'error' = 'info') => {
     const now = new Date();
@@ -1045,86 +984,173 @@ function Step4Brand({ data, update, errors }: any) {
                    />
                  </div>
                )}
-
-               {/* ── Business Photos Upload Option ── */}
-               <div style={{ marginTop: 'var(--space-6)', borderTop: '1px solid var(--color-gray-200)', paddingTop: 'var(--space-6)' }}>
-                 <label className="checkbox-label" style={{ fontWeight: 600, color: 'var(--color-gray-900)' }}>
-                   <input
-                     type="checkbox"
-                     checked={data.photos_uploaded}
-                     onChange={e => update('photos_uploaded', e.target.checked)}
-                   />
-                   <span>I have photos of my business, work, or team to use on the website</span>
-                 </label>
-                 <p className="form-hint" style={{ marginTop: 4, marginLeft: 28 }}>
-                   Upload your own images so we can feature them in the Hero, About, or Service sections!
-                 </p>
-
-                 {data.photos_uploaded && (
-                   <div style={{ marginTop: 'var(--space-4)', marginLeft: 28 }}>
-                     <label className={styles.uploadArea}>
-                       <input
-                         type="file"
-                         accept="image/*"
-                         multiple
-                         style={{ display: 'none' }}
-                         onChange={handlePhotoUpload}
-                       />
-                       <ImageIcon size={32} style={{ margin: '0 auto 8px', color: 'var(--color-primary)' }} />
-                       <div style={{ fontWeight: 600, color: 'var(--color-gray-800)' }}>
-                         Click or drag &amp; drop to upload business photos
-                       </div>
-                       <div style={{ fontSize: 'var(--text-xs)', color: 'var(--color-gray-500)', marginTop: 4 }}>
-                         Select multiple JPG, PNG, or WEBP files — Automatically compressed &amp; hosted on Supabase
-                       </div>
-                     </label>
-
-                     {(isCompressingPhoto || isUploadingPhoto || photoStats) && (
-                       <div style={{ textAlign: 'center', marginTop: 12 }}>
-                         {isCompressingPhoto || isUploadingPhoto ? (
-                           <div className={styles.compressionBadge} style={{ background: '#eff6ff', borderColor: '#3b82f6', color: '#1d4ed8' }}>
-                             <Loader2 size={14} className={styles.spinnerIcon} />
-                             {isCompressingPhoto ? 'Compressing photo with Compressor.js...' : 'Uploading photo to Supabase Storage...'}
-                           </div>
-                         ) : (
-                           <div className={styles.compressionBadge}>
-                             <Zap size={14} />
-                             {photoStats}
-                           </div>
-                         )}
-                       </div>
-                     )}
-
-                     {data.uploaded_photos_urls && data.uploaded_photos_urls.length > 0 && (
-                       <div style={{ marginTop: 16 }}>
-                         <div style={{ fontSize: 'var(--text-xs)', fontWeight: 600, color: 'var(--color-gray-700)', marginBottom: 8, display: 'flex', alignItems: 'center', gap: 6 }}>
-                           <CheckCircle2 size={14} color="#10b981" /> {data.uploaded_photos_urls.length} Photo(s) Ready for Your Website:
-                         </div>
-                         <div style={{ display: 'flex', gap: 10, flexWrap: 'wrap' }}>
-                           {data.uploaded_photos_urls.map((url: string, idx: number) => (
-                             <div key={idx} style={{ position: 'relative', width: 80, height: 80, borderRadius: 8, overflow: 'hidden', border: '1px solid var(--color-gray-300)', background: '#fff' }}>
-                               <img src={url} alt={`Uploaded ${idx + 1}`} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
-                               <button
-                                 type="button"
-                                 onClick={() => {
-                                   const next = data.uploaded_photos_urls.filter((_: any, i: number) => i !== idx);
-                                   update('uploaded_photos_urls', next);
-                                 }}
-                                 style={{ position: 'absolute', top: 4, right: 4, background: 'rgba(0,0,0,0.6)', color: '#fff', border: 'none', borderRadius: '50%', width: 20, height: 20, cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 12 }}
-                               >
-                                 ✕
-                               </button>
-                             </div>
-                           ))}
-                         </div>
-                       </div>
-                     )}
-                   </div>
-                 )}
-               </div>
              </div>
            </div>
          )}
+      </div>
+    </div>
+  );
+}
+
+function StepHeroPhoto({ data, update }: any) {
+  const [isCompressingPhoto, setIsCompressingPhoto] = useState(false);
+  const [isUploadingPhoto, setIsUploadingPhoto] = useState(false);
+  const [photoStats, setPhotoStats] = useState<string>('');
+  const [liveLogs, setLiveLogs] = useState<Array<{ time: string; text: string; type: 'info' | 'success' | 'warn' | 'error' }>>([]);
+
+  const addLog = (text: string, type: 'info' | 'success' | 'warn' | 'error' = 'info') => {
+    const now = new Date();
+    const time = `${now.getHours().toString().padStart(2, '0')}:${now.getMinutes().toString().padStart(2, '0')}:${now.getSeconds().toString().padStart(2, '0')}`;
+    setLiveLogs(prev => [...prev, { time, text, type }]);
+  };
+
+  const handlePhotoUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const files = e.target.files;
+    if (!files || files.length === 0) return;
+
+    setIsCompressingPhoto(true);
+    setIsUploadingPhoto(false);
+    setPhotoStats('');
+    setLiveLogs([]);
+    
+    // Take only the single file selected for the hero section
+    const file = files[0];
+    addLog(`📁 Selected hero photo: "${file.name}" (${(file.size / 1024).toFixed(1)} KB)`, 'info');
+    addLog('⚡ Running Compressor.js client-side optimization on hero photo...', 'info');
+
+    await new Promise<void>((resolve) => {
+      new Compressor(file, {
+        quality: 0.7,
+        maxWidth: 1600,
+        maxHeight: 1600,
+        mimeType: file.type.includes('png') ? 'image/png' : 'image/jpeg',
+        async success(compressedResult: Blob | File) {
+          const origKB = (file.size / 1024).toFixed(1);
+          const compKB = (compressedResult.size / 1024).toFixed(1);
+          const savedPct = Math.round((1 - compressedResult.size / file.size) * 100);
+
+          addLog(`⚡ Hero photo compressed! Reduced from ${origKB} KB to ${compKB} KB (${savedPct}% saved)`, 'success');
+          setPhotoStats(`⚡ Hero photo compressed by ${savedPct}% (${origKB} KB ➔ ${compKB} KB)`);
+
+          setIsUploadingPhoto(true);
+          addLog('📦 Uploading compressed hero photo to Supabase cloud bucket...', 'info');
+
+          try {
+            const publicUrl = await uploadLogoToSupabase(compressedResult, `hero_photo_${Date.now()}_${file.name}`);
+            // Store exactly ONE photo in the array for the Hero section
+            update('uploaded_photos_urls', [publicUrl]);
+            addLog(`✅ Hero photo hosted on Supabase: ${publicUrl}`, 'success');
+            toast.success('Hero Section photo compressed & hosted on Supabase!');
+          } catch (err: any) {
+            addLog(`⚠️ Supabase photo upload fallback note: ${err.message}`, 'warn');
+            const reader = new FileReader();
+            reader.readAsDataURL(compressedResult);
+            reader.onloadend = () => {
+              const base64 = reader.result as string;
+              // Store exactly ONE photo as backup data URL
+              update('uploaded_photos_urls', [base64]);
+              addLog('🔒 Stored hero photo as compressed Data URL backup for Hero Section!', 'info');
+            };
+          }
+          setIsUploadingPhoto(false);
+          resolve();
+        },
+        error(err) {
+          addLog(`❌ Photo compression error: ${err.message}`, 'error');
+          toast.error('Failed to compress hero photo.');
+          resolve();
+        },
+      });
+    });
+    setIsCompressingPhoto(false);
+  };
+
+  return (
+    <div className={styles.stepContent}>
+      <div className={styles.stepHeader}>
+        <h2>Hero Section Background / Banner Image</h2>
+        <p>Upload the single best photo representing your business, work, or team. This photo will be prominently featured directly inside the top Hero Banner of your AI-generated website!</p>
+      </div>
+
+      <div className="form-group" style={{ marginTop: 'var(--space-6)' }}>
+        <label className={styles.uploadArea}>
+          <input
+            type="file"
+            accept="image/*"
+            style={{ display: 'none' }}
+            onChange={handlePhotoUpload}
+          />
+          <ImageIcon size={38} style={{ margin: '0 auto 10px', color: 'var(--color-primary)' }} />
+          <div style={{ fontWeight: 700, fontSize: '1.1rem', color: 'var(--color-gray-900)' }}>
+            Click or drag &amp; drop to upload your Hero Section Image
+          </div>
+          <div style={{ fontSize: 'var(--text-xs)', color: 'var(--color-gray-500)', marginTop: 6 }}>
+            Select a high-res JPG, PNG, or WEBP photo — Automatically compressed &amp; displayed in your Hero Section (1 photo limit)
+          </div>
+        </label>
+
+        {/* ── Live Log Terminal Box ── */}
+        {liveLogs.length > 0 && (
+          <div className={styles.logTerminal} style={{ marginTop: 16 }}>
+            <div className={styles.logTerminalHeader}>
+              <div className={styles.logTerminalDots}>
+                <span style={{ background: '#ef4444' }} />
+                <span style={{ background: '#f59e0b' }} />
+                <span style={{ background: '#10b981' }} />
+              </div>
+              <span className={styles.logTerminalTitle}>⚡ Hero Photo Optimization &amp; Upload Logs</span>
+              {isCompressingPhoto || isUploadingPhoto ? <Loader2 size={14} className={styles.spinnerIcon} color="#38bdf8" /> : <CheckCircle2 size={14} color="#10b981" />}
+            </div>
+            <div className={styles.logTerminalBody}>
+              {liveLogs.map((log, idx) => (
+                <div key={idx} className={`${styles.logLine} ${styles['log_' + log.type]}`}>
+                  <span className={styles.logTime}>[{log.time}]</span>
+                  <span className={styles.logText}>{log.text}</span>
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
+
+        {(isCompressingPhoto || isUploadingPhoto || photoStats) && (
+          <div style={{ textAlign: 'center', marginTop: 12 }}>
+            {isCompressingPhoto || isUploadingPhoto ? (
+              <div className={styles.compressionBadge} style={{ background: '#eff6ff', borderColor: '#3b82f6', color: '#1d4ed8' }}>
+                <Loader2 size={14} className={styles.spinnerIcon} />
+                {isCompressingPhoto ? 'Compressing hero photo with Compressor.js...' : 'Uploading hero photo to Supabase Storage...'}
+              </div>
+            ) : (
+              <div className={styles.compressionBadge}>
+                <Zap size={14} />
+                {photoStats}
+              </div>
+            )}
+          </div>
+        )}
+
+        {data.uploaded_photos_urls && data.uploaded_photos_urls.length > 0 && (
+          <div style={{ marginTop: 20, padding: '18px', background: '#f8fafc', borderRadius: '12px', border: '1px solid #cbd5e1' }}>
+            <div style={{ fontSize: 'var(--text-sm)', fontWeight: 700, color: '#0f172a', marginBottom: 12, display: 'flex', alignItems: 'center', gap: 8 }}>
+              <CheckCircle2 size={16} color="#10b981" /> Active Hero Section Image (1/1):
+            </div>
+            <div style={{ display: 'flex', justifyContent: 'center' }}>
+              <div style={{ position: 'relative', width: '100%', maxWidth: 460, height: 260, borderRadius: 12, overflow: 'hidden', border: '3px solid #3b82f6', boxShadow: '0 10px 25px -5px rgba(59, 130, 246, 0.25)', background: '#fff' }}>
+                <img src={data.uploaded_photos_urls[0]} alt="Hero Section Banner" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+                <span style={{ position: 'absolute', bottom: 10, left: 10, background: '#3b82f6', color: '#fff', fontSize: 12, fontWeight: 700, padding: '5px 12px', borderRadius: 8, display: 'flex', alignItems: 'center', gap: 6 }}>
+                  ✨ Hero Section Background
+                </span>
+                <button
+                  type="button"
+                  onClick={() => update('uploaded_photos_urls', [])}
+                  style={{ position: 'absolute', top: 10, right: 10, background: 'rgba(239, 68, 68, 0.95)', color: '#fff', border: 'none', borderRadius: '50%', width: 28, height: 28, cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 14, fontWeight: 700, boxShadow: '0 2px 8px rgba(0,0,0,0.3)' }}
+                  title="Remove hero photo"
+                >
+                  ✕
+                </button>
+              </div>
+            </div>
+          </div>
+        )}
       </div>
     </div>
   );

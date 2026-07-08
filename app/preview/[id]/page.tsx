@@ -551,26 +551,48 @@ function FallbackMockup({ brief, palette }: { brief: BriefSnippet; palette: { pr
       </header>
 
       {/* Mock Hero */}
-      <section id="hero" className={styles.mockHero} style={{ background: palette.primary }}>
-        <div className={styles.mockHeroContent}>
-          {brief.emergency_service && (
-            <div className={styles.mockEmergencyBadge}>
-              <AlertTriangle size={14} /> 24/7 Emergency Service Available
+      <section
+        id="hero"
+        className={styles.mockHero}
+        style={{
+          background: brief.uploaded_photos_urls && brief.uploaded_photos_urls.length > 0
+            ? `linear-gradient(135deg, rgba(15, 23, 42, 0.88) 0%, rgba(15, 23, 42, 0.75) 100%), url("${brief.uploaded_photos_urls[0]}") center/cover no-repeat`
+            : palette.primary,
+          padding: '4.5rem 2rem',
+          color: '#ffffff',
+        }}
+      >
+        <div style={{ maxWidth: '1150px', margin: '0 auto', display: 'grid', gridTemplateColumns: brief.uploaded_photos_urls && brief.uploaded_photos_urls.length > 0 ? 'repeat(auto-fit, minmax(320px, 1fr))' : '1fr', gap: '3rem', alignItems: 'center' }}>
+          <div className={styles.mockHeroContent} style={{ textAlign: 'left' }}>
+            {brief.emergency_service && (
+              <div className={styles.mockEmergencyBadge}>
+                <AlertTriangle size={14} /> 24/7 Emergency Service Available
+              </div>
+            )}
+            <h1 className={styles.mockHeroTitle} style={{ fontSize: '2.6rem', fontWeight: 800, lineHeight: 1.2, marginBottom: '1rem' }}>
+              Expert {brief.occupation} in {brief.main_city || brief.service_area || 'Your Area'}
+            </h1>
+            <p className={styles.mockHeroSub} style={{ fontSize: '1.15rem', opacity: 0.9, marginBottom: '2rem' }}>
+              Professional, reliable {brief.occupation?.toLowerCase()} services.
+              {brief.years_in_business ? ` Over ${brief.years_in_business} of experience.` : ''}
+            </p>
+            <div className={styles.mockHeroCta} style={{ display: 'flex', gap: '1rem', flexWrap: 'wrap' }}>
+              <button className={styles.mockBtnAccent} style={{ background: palette.accent, padding: '0.9rem 1.8rem', borderRadius: '8px', fontWeight: 700, border: 'none', cursor: 'pointer', color: '#fff' }} onClick={() => (document.getElementById('contact') || document.getElementById('footer'))?.scrollIntoView({ behavior: 'smooth' })}>
+                {brief.main_cta === 'quote' ? 'Request Free Quote' : 'Call Now'}
+              </button>
+              <button className={styles.mockBtnOutline} style={{ padding: '0.9rem 1.8rem', borderRadius: '8px', fontWeight: 700, border: '2px solid rgba(255,255,255,0.7)', background: 'transparent', color: '#fff', cursor: 'pointer' }} onClick={() => document.getElementById('services')?.scrollIntoView({ behavior: 'smooth' })}>Our Services</button>
+            </div>
+          </div>
+
+          {brief.uploaded_photos_urls && brief.uploaded_photos_urls.length > 0 && (
+            <div style={{ borderRadius: '16px', overflow: 'hidden', boxShadow: '0 25px 50px -12px rgba(0, 0, 0, 0.4)', border: '4px solid rgba(255, 255, 255, 0.15)', maxHeight: '420px', background: '#000' }}>
+              <img
+                src={brief.uploaded_photos_urls[0]}
+                alt={`${brief.business_name || brief.occupation} Hero Banner`}
+                style={{ width: '100%', height: '100%', objectFit: 'cover', display: 'block' }}
+              />
             </div>
           )}
-          <h1 className={styles.mockHeroTitle}>
-            Expert {brief.occupation} in {brief.main_city || brief.service_area || 'Your Area'}
-          </h1>
-          <p className={styles.mockHeroSub}>
-            Professional, reliable {brief.occupation?.toLowerCase()} services.
-            {brief.years_in_business ? ` Over ${brief.years_in_business} of experience.` : ''}
-          </p>
-          <div className={styles.mockHeroCta}>
-            <button className={styles.mockBtnAccent} style={{ background: palette.accent }} onClick={() => (document.getElementById('contact') || document.getElementById('footer'))?.scrollIntoView({ behavior: 'smooth' })}>
-              {brief.main_cta === 'quote' ? 'Request Free Quote' : 'Call Now'}
-            </button>
-            <button className={styles.mockBtnOutline} onClick={() => document.getElementById('services')?.scrollIntoView({ behavior: 'smooth' })}>Our Services</button>
-          </div>
         </div>
       </section>
 
