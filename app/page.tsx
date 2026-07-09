@@ -40,8 +40,8 @@ function HeroSection() {
             <span className={styles.heroAccent}>Designed for Free!</span>
           </h1>
           <p className={styles.heroSubtitle}>
-            Fill out one simple form. We build your search engine optimised website. Only pay{' '}
-            <strong>$50/month</strong> if you like it. Hosting included.
+            Fill out one simple form. We build your search engine optimised website. Then rent for{' '}
+            <strong>$50/month</strong> if you love it. Hosting and bespoke web address included.
           </p>
           <div className={styles.heroCTAs}>
             <Link href="/get-started" className="btn btn-primary btn-lg">
