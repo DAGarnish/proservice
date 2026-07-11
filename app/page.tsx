@@ -6,7 +6,8 @@ import {
   ArrowRight, CheckCircle2, Zap, FileText, Eye, Globe, Star,
   ShieldCheck, Phone, DollarSign, ChevronDown, Wrench, Paintbrush,
   Droplets, Leaf, Scissors, Car, BookOpen, Calculator, Hammer,
-  Plug, Wind, Home, Sparkles, Truck, Key, Camera, Settings, RefreshCw
+  Plug, Wind, Home, Sparkles, Truck, Key, Camera, Settings, RefreshCw,
+  Mic, Scale, Waves, Compass, Building, Armchair
 } from 'lucide-react';
 import styles from './page.module.css';
 
@@ -240,10 +241,10 @@ function PricingSection() {
                 <Settings size={20} color="var(--color-primary)" />
                 <div>
                   <strong>Extended Refinement</strong>
-                  <span className={styles.addOnPrice}>$50 one-time</span>
+                  <span className={styles.addOnPrice}>$50 p/h (we can do a lot in an hour)</span>
                 </div>
               </div>
-              <p>Extended refinement (up to 1 hour call) and/or additional pages for your website.</p>
+              <p>Extended refinement: super fancy stuff, additional pages, logo tweaking etc.</p>
             </div>
           </div>
         </div>
@@ -262,7 +263,6 @@ function IndustriesSection() {
     { icon: <Leaf size={22} />, name: 'Landscapers' },
     { icon: <Home size={22} />, name: 'Roofers' },
     { icon: <Paintbrush size={22} />, name: 'Painters' },
-    { icon: <Hammer size={22} />, name: 'Handymen' },
     { icon: <Scissors size={22} />, name: 'Salons & Barbers' },
     { icon: <Car size={22} />, name: 'Auto Repair' },
     { icon: <BookOpen size={22} />, name: 'Tutors' },
@@ -270,6 +270,12 @@ function IndustriesSection() {
     { icon: <Truck size={22} />, name: 'Movers' },
     { icon: <Key size={22} />, name: 'Locksmiths' },
     { icon: <Camera size={22} />, name: 'Photographers' },
+    { icon: <Mic size={22} />, name: 'Sound Engineers' },
+    { icon: <Scale size={22} />, name: 'Legal' },
+    { icon: <Waves size={22} />, name: 'Pool Services' },
+    { icon: <Compass size={22} />, name: 'Architects' },
+    { icon: <Building size={22} />, name: 'Real Estate Agents' },
+    { icon: <Armchair size={22} />, name: 'Upholsterers' },
   ];
 
   return (
@@ -279,7 +285,7 @@ function IndustriesSection() {
           <span className="badge badge-primary">Built for local businesses</span>
           <h2>Industries We Serve</h2>
           <p className={styles.sectionSubtitle}>
-            We specialise in websites for local service businesses and sole traders across the USA.
+            We specialise in websites for businesses and sole traders, worldwide.
           </p>
         </div>
         <div className={styles.industriesGrid}>
