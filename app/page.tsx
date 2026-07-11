@@ -256,13 +256,13 @@ function PricingSection() {
 /* ─── Industries ─── */
 function IndustriesSection() {
   const industries = [
-    { icon: <Wrench size={22} />, name: 'Plumbers' },
+    { icon: <Leaf size={22} />, name: 'Landscapers' },
     { icon: <Plug size={22} />, name: 'Electricians' },
     { icon: <Wind size={22} />, name: 'HVAC' },
     { icon: <Sparkles size={22} />, name: 'Cleaners' },
-    { icon: <Leaf size={22} />, name: 'Landscapers' },
+    { icon: <Wrench size={22} />, name: 'Plumbers' },
     { icon: <Home size={22} />, name: 'Roofers' },
-    { icon: <Paintbrush size={22} />, name: 'Painters' },
+    { icon: <Star size={22} />, name: 'Models' },
     { icon: <Scissors size={22} />, name: 'Salons & Barbers' },
     { icon: <Car size={22} />, name: 'Auto Repair' },
     { icon: <BookOpen size={22} />, name: 'Tutors' },
