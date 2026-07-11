@@ -822,24 +822,12 @@ function Step4Brand({ data, update, errors }: any) {
       </div>
 
       <div className="form-group" style={{ marginTop: 'var(--space-6)' }}>
-         <label className="form-checkbox-group">
-            <input 
-               type="checkbox" 
-               checked={data.logo_uploaded}
-               onChange={e => {
-                 const checked = e.target.checked;
-                 update('logo_uploaded', checked);
-                 if (!checked) update('logo_data_url', '');
-               }}
-            />
-            <span className="form-checkbox-label">
-               <strong>Upload your logo, or ask us to design one for you!</strong>
-            </span>
+         <label className="form-label">
+            Upload your logo, or ask us to design one for you!
          </label>
 
          {/* ── Logo Upload / WEBPRO50 AI Generate Box ── */}
-         {data.logo_uploaded && (
-           <div className={styles.logoSection}>
+         <div className={styles.logoSection}>
              <div className={styles.logoTabs}>
                <button
                  type="button"
@@ -985,7 +973,6 @@ function Step4Brand({ data, update, errors }: any) {
                )}
              </div>
            </div>
-         )}
       </div>
     </div>
   );
