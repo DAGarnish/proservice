@@ -833,8 +833,7 @@ function Step4Brand({ data, update, errors }: any) {
                }}
             />
             <span className="form-checkbox-label">
-               <strong>I have a logo (or want to generate one with AI)</strong>
-               <div className="form-hint">Check this to upload your existing logo or generate a new logo using WEBPRO50 AI.</div>
+               <strong>Upload your logo, or ask us to design one for you!</strong>
             </span>
          </label>
 

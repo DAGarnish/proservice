@@ -110,7 +110,7 @@ export const defaultFormData: FormData = {
   preferred_colours: '',
   selected_website_look: 'professional-blue',
   match_logo_colours: false,
-  logo_uploaded: false,
+  logo_uploaded: true,
   logo_data_url: '',
   photos_uploaded: false,
   uploaded_photos_urls: [],
