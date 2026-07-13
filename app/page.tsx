@@ -147,13 +147,13 @@ function HowItWorksSection() {
       icon: <Eye size={28} />,
       step: '3',
       title: 'Preview & Approve',
-      description: 'Review your website 1st draft with Dave. Love it? We get you online.',
+      description: 'Review your website\'s first draft. Love it? We get you online.',
     },
     {
       icon: <Settings size={28} />,
       step: '4',
       title: 'Sign Up and Refine',
-      description: 'Refine your website with our developer team and make any changes you require.',
+      description: 'Refine your website with Dave, and make any changes you require.',
     },
     {
       icon: <Globe size={28} />,
