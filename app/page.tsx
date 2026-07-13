@@ -70,6 +70,13 @@ function HeroSection() {
               <span style={{ fontSize: '1.1em', fontWeight: 600 }}>USA/UK company and team</span>
             </div>
           </div>
+          
+          <div style={{ display: 'flex', alignItems: 'center', gap: 'var(--space-4)', backgroundColor: 'var(--color-white)', padding: 'var(--space-4) var(--space-6)', borderRadius: 'var(--radius-full)', boxShadow: 'var(--shadow-md)', border: '1px solid var(--color-gray-200)', marginTop: 'calc(var(--space-6) + 30px)', width: 'fit-content' }}>
+            <img src="/dave.jpg" alt="Dave" style={{ width: '48px', height: '48px', borderRadius: '50%', objectFit: 'cover' }} />
+            <p style={{ fontSize: '0.9rem', color: 'var(--color-gray-700)', margin: 0, lineHeight: 1.4 }}>
+              <strong>Hi, I'm Dave, CEO of WebPro50.</strong><br />I will be guiding you through the process.
+            </p>
+          </div>
         </div>
         <div className={styles.heroRightColumn} style={{ display: 'flex', flexDirection: 'column', gap: 'var(--space-8)' }}>
           <div className={styles.heroCTAbox}>
