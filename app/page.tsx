@@ -48,8 +48,8 @@ function HeroSection() {
             <Link href="/get-started" className="btn btn-primary btn-lg">
               Start My Website <ArrowRight size={18} />
             </Link>
-            <a href="#how-it-works" className="btn btn-ghost btn-lg">
-              See How It Works
+            <a href="https://www.penedeswinetours.com/" target="_blank" rel="noopener noreferrer" className="btn btn-ghost btn-lg">
+              See Example
             </a>
           </div>
           <div className={styles.heroTrust}>
@@ -64,6 +64,10 @@ function HeroSection() {
             <div className={styles.heroTrustItem}>
               <CheckCircle2 size={16} color="#16a34a" />
               <span>Cancel anytime</span>
+            </div>
+            <div className={styles.heroTrustItem}>
+              <span style={{ marginRight: '4px', fontSize: '1.5em' }}>🇺🇸 🇬🇧</span>
+              <span style={{ fontSize: '1.1em', fontWeight: 600 }}>USA/UK company and team</span>
             </div>
           </div>
         </div>
@@ -134,7 +138,7 @@ function HowItWorksSection() {
       icon: <Eye size={28} />,
       step: '3',
       title: 'Preview & Approve',
-      description: 'Review your website preview. Love it? We get you online.',
+      description: 'Review your website 1st draft with Dave. Love it? We get you online.',
     },
     {
       icon: <Settings size={28} />,
@@ -146,7 +150,7 @@ function HowItWorksSection() {
       icon: <Globe size={28} />,
       step: '5',
       title: 'Find the Perfect Domain',
-      description: 'Find the perfect domain with our domain & SEO specialist (e.g. johnsmithhvac.com).',
+      description: 'Find the perfect SEO & brand domain with Dave (e.g. jsmithhvacNYC.com).',
     },
     {
       icon: <RefreshCw size={28} />,
