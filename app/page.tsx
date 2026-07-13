@@ -9,6 +9,7 @@ import {
   Plug, Wind, Home, Sparkles, Truck, Key, Camera, Settings, RefreshCw,
   Mic, Scale, Waves, Compass, Building, Armchair
 } from 'lucide-react';
+import FAQLink from './FAQLink';
 import styles from './page.module.css';
 
 export default function HomePage() {
@@ -48,8 +49,9 @@ function HeroSection() {
             <Link href="/get-started" className="btn btn-primary btn-lg">
               Start My Website <ArrowRight size={18} />
             </Link>
-            <a href="https://www.penedeswinetours.com/" target="_blank" rel="noopener noreferrer" className="btn btn-ghost btn-lg">
-              See Example
+            <a href="https://www.penedeswinetours.com/" target="_blank" rel="noopener noreferrer" className="btn btn-ghost btn-lg" style={{ display: 'inline-flex', flexDirection: 'column', alignItems: 'center', lineHeight: 1.2, padding: 'var(--space-2) var(--space-6)' }}>
+              <span>See Example</span>
+              <span style={{ fontSize: '0.65em', fontWeight: 400, opacity: 0.8 }}>(without deluxe refinement)</span>
             </a>
           </div>
           <div className={styles.heroTrust}>
@@ -251,11 +253,11 @@ function PricingSection() {
               <div className={styles.addOnHeader}>
                 <Settings size={20} color="var(--color-primary)" />
                 <div>
-                  <strong>Extended Refinement</strong>
+                  <strong>Deluxe Refinement</strong>
                   <span className={styles.addOnPrice}>$50 p/h (we can do a lot in an hour)</span>
                 </div>
               </div>
-              <p>Extended refinement: super fancy stuff, additional pages, logo tweaking etc.</p>
+              <p>Deluxe refinement: super fancy stuff, additional pages, logo tweaking. See more in <FAQLink /></p>
             </div>
           </div>
         </div>
@@ -336,7 +338,7 @@ function CTABannerSection() {
 
 /* ─── FAQ ─── */
 function FAQSection() {
-  const faqs = [
+  const faqs: { id?: string; q: string; a: React.ReactNode }[] = [
     {
       q: 'Do I need any technical skills?',
       a: 'Not at all. You just fill out a simple form about your business — like your services, location, and style preferences. We handle all the technical work.',
@@ -347,7 +349,7 @@ function FAQSection() {
     },
     {
       q: 'Is the $50/month really all I pay?',
-      a: 'Yes — $50/month covers your website and hosting. The only optional extras are the Google listing setup ($50 one-time) and extended refinement: super fancy stuff, additional pages, logo tweaking etc. $50 p/h. Most clients do not require this.',
+      a: 'Yes — $50/month covers your website and hosting. The only optional extras are the Google listing setup ($50 one-time) and deluxe refinement: super fancy stuff, additional pages, logo tweaking etc. $50 p/h. Most clients do not require this.',
     },
     {
       q: 'Can I cancel anytime?',
@@ -369,6 +371,15 @@ function FAQSection() {
       q: 'Can I make changes to my website later?',
       a: 'Yes. All clients can request a refresh and/or update every quarter.',
     },
+    {
+      id: 'faq-deluxe',
+      q: 'Do I need Deluxe Refinement?',
+      a: (
+        <>
+          Probably not — see <a href="https://www.penedeswinetours.com/" target="_blank" rel="noopener noreferrer" style={{ textDecoration: 'underline' }}>this</a> example of no deluxe refinement and <a href="https://www.garnishrealestate.com/" target="_blank" rel="noopener noreferrer" style={{ textDecoration: 'underline' }}>this</a> one with it added. The additions are the fancy Fee Transparency Calculator and the three guides just above that. It was all done in one hour ($50)
+        </>
+      ),
+    },
   ];
 
   return (
@@ -380,7 +391,7 @@ function FAQSection() {
         </div>
         <div className={styles.faqList}>
           {faqs.map((faq, i) => (
-            <FAQItem key={i} question={faq.q} answer={faq.a} />
+            <FAQItem key={i} id={faq.id} question={faq.q} answer={faq.a} />
           ))}
         </div>
       </div>
@@ -388,9 +399,9 @@ function FAQSection() {
   );
 }
 
-function FAQItem({ question, answer }: { question: string; answer: string }) {
+function FAQItem({ question, answer, id }: { question: string; answer: React.ReactNode; id?: string }) {
   return (
-    <details className={styles.faqItem}>
+    <details className={styles.faqItem} id={id}>
       <summary className={styles.faqQuestion}>
         {question}
         <ChevronDown size={18} className={styles.faqChevron} />
@@ -418,8 +429,9 @@ function FinalCTASection() {
           <Link href="/get-started" className="btn btn-primary btn-lg">
             Start My Website <ArrowRight size={18} />
           </Link>
-          <a href="https://www.penedeswinetours.com/" target="_blank" rel="noopener noreferrer" className="btn btn-outline btn-lg">
-            See Example
+          <a href="https://www.penedeswinetours.com/" target="_blank" rel="noopener noreferrer" className="btn btn-outline btn-lg" style={{ display: 'inline-flex', flexDirection: 'column', alignItems: 'center', lineHeight: 1.2, padding: 'var(--space-2) var(--space-6)' }}>
+            <span>See Example</span>
+            <span style={{ fontSize: '0.65em', fontWeight: 400, opacity: 0.8 }}>(without deluxe refinement)</span>
           </a>
         </div>
       </div>

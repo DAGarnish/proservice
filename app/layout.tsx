@@ -153,7 +153,7 @@ function Footer() {
               <span>$50/month — Website + hosting</span>
               <span style={{ marginTop: 'var(--space-2)', color: 'var(--color-gray-500)', fontWeight: 500 }}>Optional:</span>
               <span>$50 one-time — Google listing setup</span>
-              <span>$50 one-time — Extended refinement & extra pages</span>
+              <span>$50 p/h— Deluxe refinement</span>
             </div>
           </div>
         </div>
