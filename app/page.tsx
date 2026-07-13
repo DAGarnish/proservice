@@ -347,7 +347,7 @@ function FAQSection() {
     },
     {
       q: 'Is the $50/month really all I pay?',
-      a: 'Yes — $50/month covers your website and hosting. The only optional extras are the Google listing setup ($50 one-time) and a branded domain ($50 URL consultation and setup).',
+      a: 'Yes — $50/month covers your website and hosting. The only optional extras are the Google listing setup ($50 one-time) and extended refinement: super fancy stuff, additional pages, logo tweaking etc. $50 p/h. Most clients do not require this.',
     },
     {
       q: 'Can I cancel anytime?',
@@ -359,7 +359,7 @@ function FAQSection() {
     },
     {
       q: 'Do I need a domain name?',
-      a: 'No — we can host your site on a WEBPRO50 subdirectory for free. But if you want your own branded domain (like johnsmithhvac.com), we offer that as an add-on for $50 URL consultation and setup.',
+      a: 'No — you get a free consultation with Dave to decide the best domain for you and we take care of the rest... including the cost. If you have a domain you wish to port over, we can do that if you provide us with the technical information we need.',
     },
     {
       q: 'What\'s included in the Google listing setup?',
@@ -367,7 +367,7 @@ function FAQSection() {
     },
     {
       q: 'Can I make changes to my website later?',
-      a: 'Yes. As a paying customer, you can request updates and changes to your website at any time.',
+      a: 'Yes. All clients can request a refresh and/or update every quarter.',
     },
   ];
 
@@ -418,8 +418,8 @@ function FinalCTASection() {
           <Link href="/get-started" className="btn btn-primary btn-lg">
             Start My Website <ArrowRight size={18} />
           </Link>
-          <a href="#pricing" className="btn btn-outline btn-lg">
-            View Pricing
+          <a href="https://www.penedeswinetours.com/" target="_blank" rel="noopener noreferrer" className="btn btn-outline btn-lg">
+            See Example
           </a>
         </div>
       </div>
