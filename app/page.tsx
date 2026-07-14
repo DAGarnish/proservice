@@ -10,6 +10,7 @@ import {
   Mic, Scale, Waves, Compass, Building, Armchair
 } from 'lucide-react';
 import FAQLink from './FAQLink';
+import MainPageAccountForm from './components/MainPageAccountForm';
 import styles from './page.module.css';
 
 export default function HomePage() {
@@ -411,29 +412,36 @@ function FAQItem({ question, answer, id }: { question: string; answer: React.Rea
   );
 }
 
-/* ─── Final CTA ─── */
+/* ─── Final CTA / Account Form Section ─── */
 function FinalCTASection() {
   return (
-    <section className={`section ${styles.finalCTA}`}>
-      <div className="container" style={{ textAlign: 'center' }}>
-        <ShieldCheck size={40} color="var(--color-primary)" />
-        <h2 style={{ marginTop: 'var(--space-4)' }}>
-          Your Customers Are Searching Online.
-          <br />
-          Let Them Find You.
-        </h2>
-        <p style={{ color: 'var(--color-gray-600)', fontSize: 'var(--text-lg)', maxWidth: 520, margin: 'var(--space-4) auto var(--space-8)' }}>
-          Stop losing work to competitors with websites. Get yours in minutes — not weeks.
-        </p>
-        <div style={{ display: 'flex', gap: 'var(--space-4)', justifyContent: 'center', flexWrap: 'wrap' }}>
-          <Link href="/get-started" className="btn btn-primary btn-lg">
-            Start My Website <ArrowRight size={18} />
-          </Link>
-          <a href="https://www.penedeswinetours.com/" target="_blank" rel="noopener noreferrer" className="btn btn-outline btn-lg" style={{ display: 'inline-flex', flexDirection: 'column', alignItems: 'center', lineHeight: 1.2, padding: 'var(--space-2) var(--space-6)' }}>
-            <span>See Example</span>
-            <span style={{ fontSize: '0.65em', fontWeight: 400, opacity: 0.8 }}>(without deluxe refinement)</span>
-          </a>
+    <section id="verify-email-form" className={`section ${styles.finalCTA}`} style={{ paddingBottom: '4rem' }}>
+      <div className="container" style={{ textAlign: 'center', maxWidth: '760px', margin: '0 auto' }}>
+        <div style={{ marginBottom: '3rem' }}>
+          <ShieldCheck size={42} color="var(--color-primary)" style={{ margin: '0 auto 12px' }} />
+          <h2 style={{ fontSize: '2.2rem', fontWeight: 800, color: 'var(--color-gray-900)', marginBottom: '8px', lineHeight: 1.3 }}>
+            Your Customers Are Searching Online.<br />Let Them Find You.
+          </h2>
+          <p style={{ color: 'var(--color-gray-600)', fontSize: '1.1rem', maxWidth: 600, margin: '0 auto 24px' }}>
+            Stop losing work to competitors with websites. Get yours in minutes — not weeks.
+          </p>
+          <div style={{ display: 'flex', gap: '1rem', justifyContent: 'center', flexWrap: 'wrap' }}>
+            <Link href="/get-started" className="btn btn-primary btn-lg">
+              Start My Website <ArrowRight size={18} />
+            </Link>
+            <a
+              href="https://www.penedeswinetours.com/"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="btn btn-ghost btn-lg"
+              style={{ display: 'inline-flex', flexDirection: 'column', alignItems: 'center', lineHeight: 1.2, padding: 'var(--space-2) var(--space-6)' }}
+            >
+              <span>See Example</span>
+              <span style={{ fontSize: '0.65em', fontWeight: 400, opacity: 0.8 }}>(without deluxe refinement)</span>
+            </a>
+          </div>
         </div>
+        <MainPageAccountForm />
       </div>
     </section>
   );

@@ -7,10 +7,34 @@ generator client {
   provider = "prisma-client-js"
 }
 
+model User {
+  id                 String   @id @default(cuid())
+  createdAt          DateTime @default(now())
+  updatedAt          DateTime @updatedAt
+
+  name               String
+  email              String   @unique
+  phone              String?  @default("")
+  address            String?  @default("")
+  businessName       String?  @default("")
+  occupation         String?  @default("")
+
+  // Email verification for further site management functions
+  isEmailVerified    Boolean  @default(false)
+  verificationToken  String?  @unique
+  verificationSentAt DateTime?
+
+  submissions        WebsiteSubmission[]
+}
+
 model WebsiteSubmission {
   id                    String   @id @default(cuid())
   createdAt             DateTime @default(now())
   updatedAt             DateTime @updatedAt
+
+  // Associated user account
+  userId                String?
+  user                  User?    @relation(fields: [userId], references: [id], onDelete: SetNull)
 
   // Step 1 — Business Basics
   business_name         String

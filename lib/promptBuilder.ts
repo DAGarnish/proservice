@@ -12,56 +12,56 @@ const LOOK_LABELS: Record<string, string> = {
   'bold-strong': 'Bold Strong — confident, urgent, emergency trades',
 };
 
-export function buildWebsiteBrief(data: FormData): WebsiteBrief {
+export function buildWebsiteBrief(data: FormData | Partial<FormData>): WebsiteBrief {
   const structured: StructuredBrief = {
-    business_name: data.business_name,
-    contact_name: data.contact_name,
-    phone_number: data.phone_number,
-    email_address: data.email_address,
-    business_address: data.business_address,
-    service_area: data.service_area,
-    occupation: data.occupation,
-    years_in_business: data.years_in_business,
-    main_services: data.main_services,
-    specialities: data.specialities,
-    price_list: data.price_list,
-    top_services_to_promote: data.top_services_to_promote,
-    emergency_service: data.emergency_service,
-    main_cta: data.main_cta,
-    differentiator: data.differentiator,
-    qualifications: data.qualifications,
-    insurance: data.insurance,
-    memberships: data.memberships,
-    specialist_tools: data.specialist_tools,
-    testimonials: data.testimonials,
-    notable_work: data.notable_work,
-    guarantees: data.guarantees,
-    style_preference: data.style_preference,
-    preferred_colours: data.preferred_colours,
-    selected_website_look: data.selected_website_look,
-    has_logo: data.logo_uploaded,
+    business_name: data.business_name || '',
+    contact_name: data.contact_name || '',
+    phone_number: data.phone_number || '',
+    email_address: data.email_address || '',
+    business_address: data.business_address || '',
+    service_area: data.service_area || '',
+    occupation: data.occupation || '',
+    years_in_business: data.years_in_business || '',
+    main_services: data.main_services || data.occupation || '',
+    specialities: data.specialities || '',
+    price_list: data.price_list || '',
+    top_services_to_promote: data.top_services_to_promote || '',
+    emergency_service: Boolean(data.emergency_service),
+    main_cta: data.main_cta || 'call',
+    differentiator: data.differentiator || '',
+    qualifications: data.qualifications || '',
+    insurance: Boolean(data.insurance),
+    memberships: data.memberships || '',
+    specialist_tools: data.specialist_tools || '',
+    testimonials: data.testimonials || '',
+    notable_work: data.notable_work || '',
+    guarantees: data.guarantees || '',
+    style_preference: Array.isArray(data.style_preference) ? data.style_preference : [],
+    preferred_colours: data.preferred_colours || '',
+    selected_website_look: data.selected_website_look || 'professional-blue',
+    has_logo: Boolean(data.logo_uploaded),
     logo_data_url: data.logo_data_url || '',
-    has_photos: data.photos_uploaded,
-    uploaded_photos_urls: data.uploaded_photos_urls || [],
-    example_websites: data.example_websites,
-    avoid_on_site: data.avoid_on_site,
+    has_photos: Boolean(data.photos_uploaded),
+    uploaded_photos_urls: Array.isArray(data.uploaded_photos_urls) ? data.uploaded_photos_urls : [],
+    example_websites: data.example_websites || '',
+    avoid_on_site: data.avoid_on_site || '',
     seo_locations: [data.main_city, data.full_service_area, data.priority_locations]
       .filter(Boolean)
-      .join('; '),
-    seo_keywords: data.seo_keywords,
-    contact_number_to_show: data.contact_number_to_show || data.phone_number,
-    contact_email_to_show: data.contact_email_to_show || data.email_address,
-    contact_form: data.contact_form,
-    google_maps: data.google_maps,
-    testimonials_on_site: data.testimonials_on_site,
-    quote_request_form: data.quote_request_form,
-    booking_or_whatsapp: data.booking_or_whatsapp,
-    google_listing_option: data.google_listing_option,
-    branded_domain_option: data.branded_domain_option,
-    additional_notes: data.additional_notes,
-    seasonal_offers: data.seasonal_offers,
-    competitors: data.competitors,
-    avoid_wording: data.avoid_wording,
+      .join('; ') || data.business_address || data.main_city || 'USA',
+    seo_keywords: data.seo_keywords || '',
+    contact_number_to_show: data.contact_number_to_show || data.phone_number || '',
+    contact_email_to_show: data.contact_email_to_show || data.email_address || '',
+    contact_form: data.contact_form !== undefined ? Boolean(data.contact_form) : true,
+    google_maps: data.google_maps !== undefined ? Boolean(data.google_maps) : true,
+    testimonials_on_site: data.testimonials_on_site !== undefined ? Boolean(data.testimonials_on_site) : true,
+    quote_request_form: data.quote_request_form !== undefined ? Boolean(data.quote_request_form) : true,
+    booking_or_whatsapp: data.booking_or_whatsapp || 'none',
+    google_listing_option: Boolean(data.google_listing_option),
+    branded_domain_option: Boolean(data.branded_domain_option),
+    additional_notes: data.additional_notes || '',
+    seasonal_offers: data.seasonal_offers || '',
+    competitors: data.competitors || '',
+    avoid_wording: data.avoid_wording || '',
   };
 
   const naturalLanguage = generateNaturalLanguageBrief(structured);
@@ -103,12 +103,12 @@ function generateNaturalLanguageBrief(s: StructuredBrief): string {
 
   lines.push(`DESIGN & STYLE`);
   lines.push(`Website look: ${LOOK_LABELS[s.selected_website_look] || s.selected_website_look}`);
-  if (s.style_preference.length) lines.push(`Style keywords: ${s.style_preference.join(', ')}`);
+  if (Array.isArray(s.style_preference) && s.style_preference.length > 0) lines.push(`Style keywords: ${s.style_preference.join(', ')}`);
   if (s.preferred_colours) lines.push(`Preferred colours: ${s.preferred_colours}`);
   lines.push(`Has logo: ${s.has_logo ? 'Yes' : 'No — generate professional placeholder'}`);
   if (s.logo_data_url) lines.push(`Logo Data URL: ${s.logo_data_url}\nINSTRUCTION: The user provided their logo image as a base64 Data URL. You MUST include an <img src="${s.logo_data_url}" alt="${s.business_name} Logo" class="logo" style="max-height: 48px; width: auto; object-fit: contain;"> tag inside the header navbar and footer of the generated HTML website!`);
   lines.push(`Has photos: ${s.has_photos ? 'Yes' : 'No — use professional stock images relevant to ' + s.occupation}`);
-  if (s.uploaded_photos_urls && s.uploaded_photos_urls.length > 0) {
+  if (Array.isArray(s.uploaded_photos_urls) && s.uploaded_photos_urls.length > 0) {
     lines.push(`Uploaded Photo URLs: ${s.uploaded_photos_urls.join(', ')}\nINSTRUCTION: The user uploaded real business photos hosted on Supabase Storage. You MUST use these image URLs as the <img src="..."> in the Hero section, About section, Service cards, or Gallery of the generated HTML website!`);
   }
   if (s.example_websites) lines.push(`Reference websites: ${s.example_websites}`);
@@ -121,9 +121,10 @@ function generateNaturalLanguageBrief(s: StructuredBrief): string {
   lines.push(`CONTACT & CONVERSION`);
   lines.push(`Display phone: ${s.contact_number_to_show}`);
   lines.push(`Display email: ${s.contact_email_to_show}`);
+  const firstSeoLoc = (s.seo_locations ? s.seo_locations.split(';')[0] : '') || s.business_address || s.service_area || 'USA';
   const features = [
     s.contact_form ? 'Styled HTML Contact Form' : '',
-    s.google_maps ? `Live Google Maps iframe embed using URL: https://maps.google.com/maps?q=${encodeURIComponent(s.business_address || s.service_area || s.seo_locations.split(';')[0] || 'USA')}&t=&z=13&ie=UTF8&iwloc=&output=embed` : '',
+    s.google_maps ? `Live Google Maps iframe embed using URL: https://maps.google.com/maps?q=${encodeURIComponent(firstSeoLoc)}&t=&z=13&ie=UTF8&iwloc=&output=embed` : '',
     s.testimonials_on_site ? 'Testimonials section with star ratings' : '',
     s.quote_request_form ? 'High-converting Quote Request Form with styled input fields' : '',
     s.booking_or_whatsapp !== 'none' ? `${s.booking_or_whatsapp} integration and floating mobile action bar` : '',

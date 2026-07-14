@@ -64,6 +64,7 @@ export default function PreviewPage() {
   const [isRegenerating, setIsRegenerating] = useState(false);
   const [showSavedModal, setShowSavedModal] = useState(false);
   const [savedSites, setSavedSites] = useState<Array<{ previewId: string; business_name: string; occupation: string; savedAt: string }>>([]);
+  const [isVerified, setIsVerified] = useState(false);
   const iframeRef = useRef<HTMLIFrameElement>(null);
 
   useEffect(() => {
@@ -72,8 +73,12 @@ export default function PreviewPage() {
       if (stored) {
         setSavedSites(JSON.parse(stored));
       }
+      const verifiedEmail = localStorage.getItem('proservice_verified_email');
+      if (verifiedEmail) {
+        setIsVerified(true);
+      }
     } catch (e) {
-      console.error('Failed to parse saved sites:', e);
+      console.error('Failed to parse storage:', e);
     }
   }, []);
 
@@ -256,6 +261,21 @@ export default function PreviewPage() {
 
   return (
     <div className={styles.pageContainer}>
+
+      {/* ── Email Verification Status Banner ── */}
+      <div style={{ background: isVerified ? '#14532d' : '#1e3a8a', color: '#ffffff', padding: '10px 20px', fontSize: '13.5px', fontWeight: 600, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '10px', borderBottom: '1px solid rgba(255,255,255,0.15)', flexWrap: 'wrap', textAlign: 'center' }}>
+        {isVerified ? (
+          <>
+            <CheckCircle2 size={16} style={{ color: '#4ade80' }} />
+            <span>🎉 Account &amp; Email Verified! You have full access to connect custom domains, optimize SEO, and deploy this website.</span>
+          </>
+        ) : (
+          <>
+            <Sparkles size={16} style={{ color: '#60a5fa' }} />
+            <span>📧 Verification Email Dispatched: Check your inbox to verify your email address. Verification is required to unlock custom domain registration and publish your live website!</span>
+          </>
+        )}
+      </div>
 
       {/* ── Top Action Bar ── */}
       <div className={styles.actionBar}>

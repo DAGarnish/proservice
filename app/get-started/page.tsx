@@ -65,6 +65,7 @@ export default function GetStartedPage() {
 
     addBuildLog(`🚀 Initializing AI Website Studio for "${formData.business_name}"...`, 'info');
     addBuildLog(`📋 Compiling business brief: ${formData.occupation} in ${formData.main_city}...`, 'info');
+    addBuildLog(`🔐 Preparing User account & verification email dispatch for "${formData.email_address}"...`, 'info');
     if (formData.logo_data_url) {
       if (formData.logo_data_url.includes('supabase.co')) {
         addBuildLog(`🖼️ Guaranteeing Supabase-hosted logo embedding: ${formData.logo_data_url.slice(0, 40)}...`, 'success');
@@ -108,7 +109,8 @@ export default function GetStartedPage() {
         throw new Error(data.error || 'Failed to generate preview');
       }
 
-      addBuildLog(`💾 Saving project submission to PostgreSQL database...`, 'info');
+      addBuildLog(`💾 Saving project & User account to PostgreSQL database...`, 'info');
+      addBuildLog(`📧 Verification email dispatched to ${formData.email_address}!`, 'success');
       addBuildLog(`✅ Website successfully generated with Gemini AI!`, 'success');
       addBuildLog(`🎉 Redirecting to live interactive preview...`, 'success');
 
@@ -292,7 +294,7 @@ function Step1BusinessBasics({ data, update, errors }: any) {
     <div className={styles.stepContent}>
       <h2>Tell us about your business</h2>
       <p className="form-hint" style={{ marginBottom: 'var(--space-6)', fontSize: 'var(--text-sm)' }}>
-         Let's start with the basics. This information will be used to generate your website copy and contact details.
+         Let&apos;s start with the basics. This information will be used to generate your website copy and contact details.
       </p>
 
       <div className={styles.grid2}>
@@ -342,7 +344,7 @@ function Step1BusinessBasics({ data, update, errors }: any) {
                placeholder="e.g. john@example.com"
             />
             <FieldError error={errors.email_address} />
-            <div className="form-hint" style={{marginTop: 4}}>We'll send your preview link here.</div>
+            <div className="form-hint" style={{marginTop: 4}}>We&apos;ll send your preview link here.</div>
          </div>
       </div>
 

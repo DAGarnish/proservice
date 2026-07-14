@@ -11,8 +11,9 @@ import { generateMockPreview } from '@/lib/mockPreviewGenerator';
 import { generateWebsiteWithGemini } from '@/lib/geminiGenerator';
 import { FormData, GenerationResponse } from '@/types/form';
 import { prisma, withPrismaRetry } from '@/lib/prisma';
-import { sendSubmissionEmail } from '@/lib/email';
+import { sendSubmissionEmail, sendUserVerificationEmail } from '@/lib/email';
 import { enhanceGeneratedHtml } from '@/lib/htmlSafeguard';
+import crypto from 'crypto';
 
 // Helper: get client IP from request headers
 function getClientIP(req: NextRequest): string {
@@ -101,8 +102,43 @@ export async function POST(req: NextRequest): Promise<NextResponse<GenerationRes
       );
     }
 
-    // 5. Save submission to database via Prisma
+    // 5. Create or Update User account in database (`User` table) & Save submission
+    const verificationToken = crypto.randomUUID();
+    let userId: string | undefined = undefined;
+
+    try {
+      const userRecord: any = await withPrismaRetry(() => (prisma as any).user.upsert({
+        where: { email },
+        update: {
+          name: body.contact_name || '',
+          phone: body.phone_number || '',
+          address: body.business_address || '',
+          businessName: body.business_name || '',
+          occupation: body.occupation || '',
+          verificationToken: verificationToken,
+          verificationSentAt: new Date(),
+        },
+        create: {
+          name: body.contact_name || '',
+          email: email,
+          phone: body.phone_number || '',
+          address: body.business_address || '',
+          businessName: body.business_name || '',
+          occupation: body.occupation || '',
+          verificationToken: verificationToken,
+          verificationSentAt: new Date(),
+          isEmailVerified: false,
+        }
+      }));
+      if (userRecord) {
+        userId = userRecord.id;
+      }
+    } catch (userDbError: any) {
+      console.error('[PROSERVICE] Could not upsert User record into Postgres:', userDbError.message);
+    }
+
     const submissionData: any = {
+      userId: userId || null,
       business_name: body.business_name || '',
       contact_name: body.contact_name || '',
       phone_number: body.phone_number || '',
@@ -179,11 +215,17 @@ export async function POST(req: NextRequest): Promise<NextResponse<GenerationRes
       }
     }
 
-    // 6. Send email notification via Nodemailer (non-blocking)
+    // 6. Send email notifications via Nodemailer (non-blocking)
     try {
       await sendSubmissionEmail(body as FormData, previewId);
     } catch (emailError) {
-      console.error('[PROSERVICE] Failed to send notification email:', emailError);
+      console.error('[PROSERVICE] Failed to send admin notification email:', emailError);
+    }
+
+    try {
+      await sendUserVerificationEmail(body as FormData, previewId, verificationToken);
+    } catch (userEmailError) {
+      console.error('[PROSERVICE] Failed to send user verification email:', userEmailError);
     }
 
     // 7. Record successful request (for rate limiting and logging)
@@ -199,11 +241,13 @@ export async function POST(req: NextRequest): Promise<NextResponse<GenerationRes
       durationMs: Date.now() - startTime,
     });
 
-    // 8. Return only the preview payload — no credentials, no brief internals
+    // 8. Return the preview payload along with user account & verification token details
     return NextResponse.json({
       success: true,
       previewId,
       previewData,
+      userId,
+      verificationToken,
     });
 
   } catch (error) {
