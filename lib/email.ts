@@ -1,6 +1,16 @@
 import nodemailer from 'nodemailer';
 import { FormData } from '@/types/form';
 
+function getAppUrl(): string {
+  if (process.env.NODE_ENV === 'production' || process.env.VERCEL_ENV === 'production') {
+    if (process.env.NEXT_PUBLIC_APP_URL && process.env.NEXT_PUBLIC_APP_URL !== 'http://localhost:3000') {
+      return process.env.NEXT_PUBLIC_APP_URL.replace(/\/$/, '');
+    }
+    return 'https://webpro50.com';
+  }
+  return (process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000').replace(/\/$/, '');
+}
+
 // Create Nodemailer transporter using environment variables
 export async function sendSubmissionEmail(data: FormData, previewId?: string): Promise<void> {
   const gmailUser = process.env.GMAIL_USER;
@@ -20,7 +30,7 @@ export async function sendSubmissionEmail(data: FormData, previewId?: string): P
     },
   });
 
-  const appUrl = process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000';
+  const appUrl = getAppUrl();
   const previewUrl = previewId ? `${appUrl}/preview/${previewId}` : appUrl;
 
   const subject = `🚀 New Website Preview & Intake: ${data.business_name || 'New Client'}`;
@@ -327,7 +337,7 @@ export async function sendUserVerificationEmail(
     },
   });
 
-  const appUrl = process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000';
+  const appUrl = getAppUrl();
   const previewUrl = `${appUrl}/preview/${previewId}`;
   const verifyUrl = `${appUrl}/verify-email?token=${verificationToken}&previewId=${previewId}`;
 
@@ -446,7 +456,7 @@ export async function sendWelcomePreviewEmail(
     },
   });
 
-  const appUrl = process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000';
+  const appUrl = getAppUrl();
   const previewUrl = previewId ? `${appUrl}/preview/${previewId}` : appUrl;
 
   const subject = `🎉 Email Verified! View Your AI Website Preview — ${businessName}`;
