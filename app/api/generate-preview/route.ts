@@ -142,8 +142,11 @@ export async function POST(req: NextRequest): Promise<NextResponse<GenerationRes
       logo_uploaded: Boolean(body.logo_uploaded),
       logo_data_url: body.logo_data_url || '',
       logo_prompt: body.logo_prompt || '',
-      photos_uploaded: Boolean(body.photos_uploaded),
-      uploaded_photos_urls: Array.isArray(body.uploaded_photos_urls) ? body.uploaded_photos_urls : [],
+      photos_uploaded: Boolean(body.photos_uploaded || (body.uploaded_photos_urls && body.uploaded_photos_urls.length > 0) || (body.secondary_photos_urls && body.secondary_photos_urls.length > 0)),
+      uploaded_photos_urls: [
+        ...(Array.isArray(body.uploaded_photos_urls) ? body.uploaded_photos_urls : []),
+        ...(Array.isArray(body.secondary_photos_urls) ? body.secondary_photos_urls : [])
+      ].filter((url, index, self) => url && self.indexOf(url) === index),
       example_websites: body.example_websites || '',
       avoid_on_site: body.avoid_on_site || '',
       main_city: body.main_city || '',

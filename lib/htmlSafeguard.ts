@@ -56,8 +56,8 @@ export function enhanceGeneratedHtml(
           });
           return `${openTag}${newHeroContent}${closeTag}`;
         } else {
-          // If hero has no img, inject a hero banner image box
-          const heroBannerBox = `\n  <div style="margin-top: 2rem; border-radius: 16px; overflow: hidden; box-shadow: 0 20px 25px -5px rgba(0,0,0,0.3); max-height: 480px; border: 4px solid rgba(255,255,255,0.2);"><img src="${mainHeroPhoto}" alt="${bName} Hero Banner" style="width: 100%; height: 100%; object-fit: cover; display: block;" /></div>\n`;
+          // If hero has no img, inject a hero banner image box that prevents any cropping
+          const heroBannerBox = `\n  <div style="margin-top: 2rem; border-radius: 16px; overflow: hidden; box-shadow: 0 20px 25px -5px rgba(0,0,0,0.3); max-height: 520px; border: 4px solid rgba(255,255,255,0.2); background: #0f172a; display: flex; align-items: center; justify-content: center; padding: 12px;"><img src="${mainHeroPhoto}" alt="${bName} Hero Banner" style="max-width: 100%; max-height: 480px; width: auto; height: auto; object-fit: contain; object-position: center; display: block;" /></div>\n`;
           return `${openTag}${heroContent}${heroBannerBox}${closeTag}`;
         }
       });
@@ -75,19 +75,19 @@ export function enhanceGeneratedHtml(
       return `${prefix}${newUrl}${suffix}`;
     });
 
-    // If none of the uploaded photos ended up in the document (or if there were no img tags at all), inject a gallery section
+    // If none of the uploaded photos ended up in the document OR if multiple photos were uploaded, inject a gallery section
     const hasUploadedPhoto = photoUrls.some(url => modified.includes(url));
-    if (!hasUploadedPhoto) {
+    if ((!hasUploadedPhoto || photoUrls.length > 1) && !modified.includes('ai-safeguard-gallery')) {
       const galleryHtml = `
 <!-- AI Safeguard: Uploaded Business Photos Gallery -->
-<section class="ai-safeguard-gallery" style="padding: 4rem 1.5rem; background: #ffffff; text-align: center;">
+<section class="ai-safeguard-gallery" id="gallery" style="padding: 4rem 1.5rem; background: #f8fafc; text-align: center;">
   <div style="max-width: 1100px; margin: 0 auto;">
-    <h2 style="font-size: 2.2rem; font-weight: 700; margin-bottom: 0.5rem; color: #1f2937;">Our Work &amp; Business Gallery</h2>
-    <p style="color: #4b5563; margin-bottom: 2.5rem; font-size: 1.1rem;">Take a look at our recent projects and professional standards.</p>
+    <h2 style="font-size: 2.2rem; font-weight: 700; margin-bottom: 0.5rem; color: #0f172a;">Our Work &amp; Portfolio Gallery</h2>
+    <p style="color: #4b5563; margin-bottom: 2.5rem; font-size: 1.1rem;">Take a look at our recent projects, equipment, and professional standards.</p>
     <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 1.5rem;">
       ${photoUrls.map((url, i) => `
-        <div style="border-radius: 12px; overflow: hidden; box-shadow: 0 4px 15px rgba(0,0,0,0.08); height: 240px; background: #f3f4f6;">
-          <img src="${url}" alt="${bName} photo ${i + 1}" style="width: 100%; height: 100%; object-fit: cover; transition: transform 0.3s ease;" />
+        <div style="border-radius: 12px; overflow: hidden; box-shadow: 0 4px 15px rgba(0,0,0,0.08); min-height: 240px; background: #1e293b; display: flex; align-items: center; justify-content: center; padding: 12px;">
+          <img src="${url}" alt="${bName} photo ${i + 1}" style="max-width: 100%; max-height: 300px; width: auto; height: auto; object-fit: contain !important; object-position: center; transition: transform 0.3s ease; display: block;" />
         </div>
       `).join('')}
     </div>
@@ -143,8 +143,16 @@ export function enhanceGeneratedHtml(
 
   // 4. Inject Responsive Compact Header & Mobile Menu Auto-Close Script & Style
   const safeguardStyleAndScript = `
-<!-- AI Safeguard: Responsive Compact Header & Auto-Close Mobile Menu -->
+<!-- AI Safeguard: Responsive Compact Header, Anti-Crop Image Safeguard & Auto-Close Mobile Menu -->
 <style>
+  /* Global anti-crop safeguard: prevent any images from being distorted or cropped awkwardly */
+  img:not(.logo) {
+    max-width: 100% !important;
+    height: auto !important;
+    object-fit: contain !important;
+    object-position: center;
+    border-radius: 8px;
+  }
   @media (max-width: 768px) {
     header, .header, .navbar, [class*="header"] {
       display: flex !important;

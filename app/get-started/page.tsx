@@ -949,8 +949,8 @@ function StepHeroPhoto({ data, update }: any) {
               <CheckCircle2 size={16} color="#10b981" /> Active Hero Section Image (1/1):
             </div>
             <div style={{ display: 'flex', justifyContent: 'center' }}>
-              <div style={{ position: 'relative', width: '100%', maxWidth: 460, height: 260, borderRadius: 12, overflow: 'hidden', border: '3px solid #3b82f6', boxShadow: '0 10px 25px -5px rgba(59, 130, 246, 0.25)', background: '#fff' }}>
-                <img src={data.uploaded_photos_urls[0]} alt="Hero Section Banner" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+              <div style={{ position: 'relative', width: '100%', maxWidth: 460, height: 260, borderRadius: 12, overflow: 'hidden', border: '3px solid #3b82f6', boxShadow: '0 10px 25px -5px rgba(59, 130, 246, 0.25)', background: '#0f172a', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '6px' }}>
+                <img src={data.uploaded_photos_urls[0]} alt="Hero Section Banner" style={{ maxWidth: '100%', maxHeight: '100%', width: 'auto', height: 'auto', objectFit: 'contain' }} />
                 <span style={{ position: 'absolute', bottom: 10, left: 10, background: '#3b82f6', color: '#fff', fontSize: 12, fontWeight: 700, padding: '5px 12px', borderRadius: 8, display: 'flex', alignItems: 'center', gap: 6 }}>
                   ✨ Hero Section Background
                 </span>
@@ -979,49 +979,50 @@ function StepSecondaryPhotos({ data, update }: any) {
     const files = e.target.files;
     if (!files || files.length === 0) return;
 
-    const currentPhotos = data.secondary_photos_urls || [];
-    if (currentPhotos.length >= 4) {
-      toast.error('You can only upload up to 4 secondary photos.');
-      return;
-    }
-
     setIsCompressingPhoto(true);
     setIsUploadingPhoto(false);
     
-    const file = files[0];
-    
-    await new Promise<void>((resolve) => {
-      new Compressor(file, {
-        quality: 0.7,
-        maxWidth: 1600,
-        maxHeight: 1600,
-        mimeType: file.type.includes('png') ? 'image/png' : 'image/jpeg',
-        async success(compressedResult: Blob | File) {
-          setIsUploadingPhoto(true);
+    const newPhotos: string[] = [];
+    const fileArray = Array.from(files);
 
-          try {
-            const publicUrl = await uploadLogoToSupabase(compressedResult, `secondary_photo_${Date.now()}_${file.name}`);
-            update('secondary_photos_urls', [...currentPhotos, publicUrl]);
-            toast.success('Image selected');
-          } catch (err: any) {
-            const reader = new FileReader();
-            reader.readAsDataURL(compressedResult);
-            reader.onloadend = () => {
-              const base64 = reader.result as string;
-              update('secondary_photos_urls', [...currentPhotos, base64]);
-              toast.success('Image selected');
-            };
-          }
-          setIsUploadingPhoto(false);
-          resolve();
-        },
-        error(err) {
-          toast.error('Failed to compress photo.');
-          resolve();
-        },
+    for (const file of fileArray) {
+      await new Promise<void>((resolve) => {
+        new Compressor(file, {
+          quality: 0.7,
+          maxWidth: 1600,
+          maxHeight: 1600,
+          mimeType: file.type.includes('png') ? 'image/png' : 'image/jpeg',
+          async success(compressedResult: Blob | File) {
+            setIsUploadingPhoto(true);
+
+            try {
+              const publicUrl = await uploadLogoToSupabase(compressedResult, `secondary_photo_${Date.now()}_${file.name}`);
+              newPhotos.push(publicUrl);
+              resolve();
+            } catch (err: any) {
+              const reader = new FileReader();
+              reader.readAsDataURL(compressedResult);
+              reader.onloadend = () => {
+                const base64 = reader.result as string;
+                newPhotos.push(base64);
+                resolve();
+              };
+            }
+          },
+          error(err) {
+            toast.error(`Failed to compress photo: ${file.name}`);
+            resolve();
+          },
+        });
       });
-    });
+    }
+
+    if (newPhotos.length > 0) {
+      update('secondary_photos_urls', [...(data.secondary_photos_urls || []), ...newPhotos]);
+      toast.success(`${newPhotos.length} photo(s) added successfully!`);
+    }
     setIsCompressingPhoto(false);
+    setIsUploadingPhoto(false);
   };
 
   const removePhoto = (index: number) => {
@@ -1032,35 +1033,39 @@ function StepSecondaryPhotos({ data, update }: any) {
   };
 
   return (
-    <div className={styles.stepContent} style={{ marginTop: '2rem', borderTop: '1px solid #e2e8f0', paddingTop: '2rem' }}>
+    <div className={styles.stepContent} style={{ marginTop: '2rem', borderTop: '2px dashed #cbd5e1', paddingTop: '2.5rem', background: '#f8fafc', padding: '2rem', borderRadius: '16px' }}>
       <div className={styles.stepHeader}>
-        <h3 style={{ fontSize: '1.4rem', fontWeight: 700, marginBottom: '8px' }}>Secondary Photos (Optional)</h3>
-        <p>Upload up to 4 additional <strong>hi-res</strong> photos to show off your work, your team, or your equipment.</p>
+        <div style={{ display: 'flex', alignItems: 'center', gap: '10px', marginBottom: '8px' }}>
+          <span style={{ background: '#10b981', color: '#fff', fontSize: '11px', fontWeight: 800, padding: '3px 8px', borderRadius: '6px', textTransform: 'uppercase' }}>Enhanced Gallery Box</span>
+          <h3 style={{ fontSize: '1.4rem', fontWeight: 800, color: '#0f172a', margin: 0 }}>Additional &amp; Portfolio Photos (Unlimited)</h3>
+        </div>
+        <p style={{ color: '#475569', fontSize: '1rem', lineHeight: 1.5 }}>Upload as many <strong>hi-res</strong> photos as you want! Showcase your recent projects, before/after shots, team members, or equipment. All photos are automatically sized with zero cropping and displayed inside a beautiful interactive gallery section.</p>
       </div>
 
       <div className="form-group" style={{ marginTop: 'var(--space-4)' }}>
-        <label className={styles.uploadArea}>
+        <label className={styles.uploadArea} style={{ background: '#ffffff', border: '2px dashed #3b82f6', padding: '28px 20px' }}>
           <input
             type="file"
             accept="image/*"
+            multiple
             style={{ display: 'none' }}
             onChange={handlePhotoUpload}
-            disabled={(data.secondary_photos_urls || []).length >= 4}
+            disabled={isCompressingPhoto || isUploadingPhoto}
           />
-          <ImageIcon size={32} style={{ margin: '0 auto 8px', color: 'var(--color-primary)' }} />
-          <div style={{ fontWeight: 600, color: 'var(--color-gray-900)' }}>
-            Click or drag &amp; drop to upload a secondary photo
+          <ImageIcon size={36} style={{ margin: '0 auto 8px', color: '#3b82f6' }} />
+          <div style={{ fontWeight: 700, fontSize: '1.05rem', color: '#0f172a' }}>
+            {isCompressingPhoto || isUploadingPhoto ? 'Processing & uploading photos...' : 'Click or drag & drop to upload Gallery Photos (Select multiple at once!)'}
           </div>
-          <div style={{ fontSize: 'var(--text-xs)', color: 'var(--color-gray-500)', marginTop: 4 }}>
-            Up to 4 photos allowed ({(data.secondary_photos_urls || []).length}/4)
+          <div style={{ fontSize: 'var(--text-xs)', color: '#64748b', marginTop: 4 }}>
+            ⚡ Unlimited uploads — No crop distortion — Currently {(data.secondary_photos_urls || []).length} photos added
           </div>
         </label>
 
         {data.secondary_photos_urls && data.secondary_photos_urls.length > 0 && (
           <div style={{ marginTop: 20, display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(140px, 1fr))', gap: '16px' }}>
             {data.secondary_photos_urls.map((url: string, idx: number) => (
-              <div key={idx} style={{ position: 'relative', width: '100%', height: 120, borderRadius: 8, overflow: 'hidden', border: '2px solid #e2e8f0' }}>
-                <img src={url} alt={`Secondary Photo ${idx + 1}`} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+              <div key={idx} style={{ position: 'relative', width: '100%', height: 120, borderRadius: 8, overflow: 'hidden', border: '2px solid #cbd5e1', background: '#0f172a', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '4px' }}>
+                <img src={url} alt={`Secondary Photo ${idx + 1}`} style={{ maxWidth: '100%', maxHeight: '100%', width: 'auto', height: 'auto', objectFit: 'contain' }} />
                 <button
                   type="button"
                   onClick={() => removePhoto(idx)}

@@ -41,8 +41,11 @@ export function buildWebsiteBrief(data: FormData | Partial<FormData>): WebsiteBr
     selected_website_look: data.selected_website_look || 'professional-blue',
     has_logo: Boolean(data.logo_uploaded),
     logo_data_url: data.logo_data_url || '',
-    has_photos: Boolean(data.photos_uploaded),
-    uploaded_photos_urls: Array.isArray(data.uploaded_photos_urls) ? data.uploaded_photos_urls : [],
+    has_photos: Boolean(data.photos_uploaded || (data.uploaded_photos_urls && data.uploaded_photos_urls.length > 0) || (data.secondary_photos_urls && data.secondary_photos_urls.length > 0)),
+    uploaded_photos_urls: [
+      ...(Array.isArray(data.uploaded_photos_urls) ? data.uploaded_photos_urls : []),
+      ...(Array.isArray(data.secondary_photos_urls) ? data.secondary_photos_urls : [])
+    ].filter((url, index, self) => url && self.indexOf(url) === index),
     example_websites: data.example_websites || '',
     avoid_on_site: data.avoid_on_site || '',
     seo_locations: [data.main_city, data.full_service_area, data.priority_locations]
@@ -109,7 +112,7 @@ function generateNaturalLanguageBrief(s: StructuredBrief): string {
   if (s.logo_data_url) lines.push(`Logo Data URL: ${s.logo_data_url}\nINSTRUCTION: The user provided their logo image as a base64 Data URL. You MUST include an <img src="${s.logo_data_url}" alt="${s.business_name} Logo" class="logo" style="max-height: 48px; width: auto; object-fit: contain;"> tag inside the header navbar and footer of the generated HTML website!`);
   lines.push(`Has photos: ${s.has_photos ? 'Yes' : 'No — use professional stock images relevant to ' + s.occupation}`);
   if (Array.isArray(s.uploaded_photos_urls) && s.uploaded_photos_urls.length > 0) {
-    lines.push(`Uploaded Photo URLs: ${s.uploaded_photos_urls.join(', ')}\nINSTRUCTION: The user uploaded real business photos hosted on Supabase Storage. You MUST use these image URLs as the <img src="..."> in the Hero section, About section, Service cards, or Gallery of the generated HTML website!`);
+    lines.push(`Uploaded Photo URLs: ${s.uploaded_photos_urls.join(', ')}\nINSTRUCTION: The user uploaded ${s.uploaded_photos_urls.length} real business photos hosted on Supabase Storage. You MUST use the FIRST photo (${s.uploaded_photos_urls[0]}) prominently as the top Hero Section background banner image (<img src="${s.uploaded_photos_urls[0]}" class="hero-bg">). You MUST ALSO display ALL uploaded photos (${s.uploaded_photos_urls.join(', ')}) inside a dedicated, responsive "Our Work & Portfolio Gallery" section with card hover effects and across service/about cards to create an authentic, beautiful website!`);
   }
   if (s.example_websites) lines.push(`Reference websites: ${s.example_websites}`);
   if (s.avoid_on_site) lines.push(`Do NOT include: ${s.avoid_on_site}\n`);
@@ -132,7 +135,7 @@ function generateNaturalLanguageBrief(s: StructuredBrief): string {
   ].filter(Boolean);
   if (features.length) {
     lines.push(`Features to include: ${features.join(' — ')}\n`);
-    lines.push(`MANDATORY INSTRUCTIONS:\n1. MAP: You MUST include the live interactive Google Map iframe with the URL above. Never create empty placeholders!\n2. FAQ: Include a dedicated FAQ section answering 4 common questions for ${s.occupation}.\n3. FORM: Include a styled HTML lead capture form (Name, Phone, Email, Service Needed, Message).\n4. MOBILE: Include a fixed bottom mobile action bar for easy calling/messaging on smartphones.\n`);
+    lines.push(`MANDATORY INSTRUCTIONS:\n1. CONTENT EXPANSION (CRITICAL): Based on the client's form instructions above, you MUST expand each major section (About Us, Why Choose Us, Service Area & Local Expertise) into comprehensive, highly polished, persuasive copy of approximately 200 words per section!\n2. SERVICES SALES COPY (200 - 500 WORDS): From the information on the form regarding services (${s.main_services}, ${s.specialities || ''}), you MUST expand and write a dedicated, highly persuasive sales overview paragraph of **200 - 500 words selling the customer's services**! Put this sales overview right at the top of the Services section before listing the individual service cards/tiers.\n3. NO-CROP IMAGE RULE: Do NOT crop or distort uploaded pictures or logos. Always use 'object-fit: contain; max-height: 480px;' or well-proportioned cards ('aspect-ratio: 4/3; object-fit: cover; object-position: center;') so no part of any picture is sliced or cut off.\n4. MAP: You MUST include the live interactive Google Map iframe with the URL above. Never create empty placeholders!\n5. FAQ: Include a dedicated FAQ section answering 4 common questions for ${s.occupation}.\n6. FORM: Include a styled HTML lead capture form (Name, Phone, Email, Service Needed, Message).\n7. MOBILE: Include a fixed bottom mobile action bar for easy calling/messaging on smartphones.\n8. DESIGN: Use state-of-the-art modern aesthetics, vibrant gradients, rich card layouts, and subtle CSS hover animations to make the site look stunning and premium.\n`);
   }
 
   if (s.additional_notes) lines.push(`Additional instructions: ${s.additional_notes}`);
