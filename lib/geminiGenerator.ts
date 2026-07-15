@@ -78,12 +78,19 @@ WEBSITE REQUIREMENTS
 11. FLOATING MOBILE ACTION BAR (FOR MOBILE VIEWPORTS)
 - For mobile devices (under 768px), include a fixed bottom contact bar with quick action buttons (e.g., "Call Now" and "Get a Quote" or "WhatsApp") so visitors on smartphones can contact the business immediately from any scroll position.
 
-DESIGN AND STYLE RULES
-- Use selected_website_look and preferred_colours as the main design direction
-- If a website look is selected, reflect that style in layout, colours, accents, button style, and section tone
-- Design must feel premium, vibrant, state of the art, and conversion-focused
-- Avoid generic AI-looking SaaS templates
-- Prioritize trust, clarity, readability, and conversion
+COPYWRITING & GRAMMAR RULES — CRITICAL
+- Ensure flawless grammar, correct spelling, and persuasive, professional sentences throughout the entire site.
+- Use fluid, native-sounding English copywriting that builds trust and avoids repetitive or robotic phrasing.
+- Ensure perfect punctuation, capitalization, and formatting for all headings, paragraphs, and lists.
+
+DESIGN AND STYLE RULES — CRITICAL AESTHETICS
+- The website MUST be visually stunning and WOW the user at first glance.
+- Implement rich, modern aesthetics: cohesive color palettes, smooth gradients, subtle box-shadows, and elegant spacing.
+- Use high-quality modern typography (e.g., import Google Fonts like Inter, Outfit, or Plus Jakarta Sans) with excellent contrast and clear hierarchy.
+- Include CSS micro-animations (e.g., smooth button hover effects, subtle card lifts, or fade-in transitions) to make the site feel dynamic and alive.
+- Avoid generic, flat, blocky, or outdated "template" looks. The design must feel strictly premium and state-of-the-art.
+- Use selected_website_look and preferred_colours as the main design direction.
+- IMAGE SIZING: Do NOT distort or aggressively crop uploaded or placeholder images. Use CSS 'object-fit: contain' or carefully proportioned 'cover' so that important parts of the image (especially logos and project photos) are fully visible and not cut off.
 
 SUPPORTED WEBSITE LOOK DIRECTIONS
 1. Professional Blue - trustworthy, professional, established (trades, consultants, repair)

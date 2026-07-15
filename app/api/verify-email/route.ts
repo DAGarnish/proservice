@@ -73,8 +73,8 @@ export async function GET(req: NextRequest) {
                    method: 'POST',
                    headers: { 'Content-Type': 'application/json' },
                    body: JSON.stringify({
-                     system_instruction: { parts: [{ text: "You are a logo generator. Return ONLY raw valid SVG code starting with <svg> and ending with </svg>." }] },
-                     contents: [{ role: 'user', parts: [{ text: `Generate a modern logo for Business: "${sub.business_name || 'My Business'}", Industry: "${sub.occupation || 'Services'}". Prompt: "${sub.logo_prompt}"` }] }],
+                     system_instruction: { parts: [{ text: "You are an expert, award-winning logo designer. Your ONLY job is to output a beautifully aesthetic, modern, and highly premium raw SVG code. Do not output anything other than the exact SVG code starting with <svg> and ending with </svg>." }] },
+                     contents: [{ role: 'user', parts: [{ text: `Generate a stunning, modern vector logo for Business: "${sub.business_name || 'My Business'}", Industry: "${sub.occupation || 'Services'}". Prompt: "${sub.logo_prompt}". Ensure it has a transparent background, cohesive brand colors, perfectly scaled proportions (use viewBox), and crisp, professional vector shapes.` }] }],
                      generationConfig: { temperature: 0.8, maxOutputTokens: 8192, responseMimeType: 'text/plain' },
                    }),
                  });
