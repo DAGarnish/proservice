@@ -533,13 +533,10 @@ function Step4Brand({ data, update, errors }: any) {
             setSupabaseUrl(publicUrl);
             update('logo_data_url', publicUrl);
             setIsUploadingSupabase(false);
-            addLog(`✅ Successfully hosted on Supabase Storage: ${publicUrl}`, 'success');
-            toast.success(`Logo compressed (${savedPct}%) & hosted on Supabase!`);
+            toast.success('Image selected');
           } catch (err: any) {
             setIsUploadingSupabase(false);
-            addLog(`⚠️ Supabase upload note: ${err.message}`, 'warn');
-            addLog('🔒 Using compressed local Data URL as reliable backup!', 'info');
-            toast.success(`Logo compressed by ${savedPct}% and ready!`);
+            toast.success('Image selected');
           }
         };
       },
@@ -827,56 +824,13 @@ function Step4Brand({ data, update, errors }: any) {
                  </div>
                )}
 
-               {/* ── Live Log Terminal Box ── */}
-               {liveLogs.length > 0 && (
-                 <div className={styles.logTerminal}>
-                   <div className={styles.logTerminalHeader}>
-                     <div className={styles.logTerminalDots}>
-                       <span style={{ background: '#ef4444' }} />
-                       <span style={{ background: '#f59e0b' }} />
-                       <span style={{ background: '#10b981' }} />
-                     </div>
-                     <span className={styles.logTerminalTitle}>⚡ Live Generation & Upload Logs</span>
-                     {isGenerating || isCompressing || isUploadingSupabase ? <Loader2 size={14} className={styles.spinnerIcon} color="#38bdf8" /> : <CheckCircle2 size={14} color="#10b981" />}
-                   </div>
-                   <div className={styles.logTerminalBody}>
-                     {liveLogs.map((log, idx) => (
-                       <div key={idx} className={`${styles.logLine} ${styles['log_' + log.type]}`}>
-                         <span className={styles.logTime}>[{log.time}]</span>
-                         <span className={styles.logText}>{log.text}</span>
-                       </div>
-                     ))}
-                   </div>
-                 </div>
-               )}
 
-               {/* ── Compression Stats Badge ── */}
-               {(isCompressing || isUploadingSupabase || compressionStats) && (
-                 <div style={{ textAlign: 'center', marginTop: 12 }}>
-                   {isCompressing || isUploadingSupabase ? (
-                     <div className={styles.compressionBadge} style={{ background: '#eff6ff', borderColor: '#3b82f6', color: '#1d4ed8' }}>
-                       <Loader2 size={14} className={styles.spinnerIcon} />
-                       {isCompressing ? 'Running Compressor.js image compression...' : 'Uploading to Supabase Storage...'}
-                     </div>
-                   ) : (
-                     <div className={styles.compressionBadge}>
-                       <Zap size={14} />
-                       {compressionStats}
-                     </div>
-                   )}
-                 </div>
-               )}
 
                {/* ── Logo Preview ── */}
                {data.logo_data_url && (
                  <div className={styles.logoPreviewBox}>
                    <div style={{ fontSize: 'var(--text-xs)', fontWeight: 600, color: 'var(--color-gray-600)', display: 'flex', alignItems: 'center', gap: 6, flexWrap: 'wrap', justifyContent: 'center' }}>
                      <CheckCircle2 size={14} color="#10b981" /> Active Website Logo
-                     {data.logo_data_url.includes('supabase.co') && (
-                       <span style={{ background: '#ecfdf5', border: '1px solid #10b981', color: '#047857', padding: '2px 8px', borderRadius: 12, fontSize: 10 }}>
-                         🟢 Hosted on Supabase Storage
-                       </span>
-                     )}
                    </div>
                    <img
                      src={data.logo_data_url}
@@ -939,17 +893,15 @@ function StepHeroPhoto({ data, update }: any) {
             const publicUrl = await uploadLogoToSupabase(compressedResult, `hero_photo_${Date.now()}_${file.name}`);
             // Store exactly ONE photo in the array for the Hero section
             update('uploaded_photos_urls', [publicUrl]);
-            addLog(`✅ Hero photo hosted on Supabase: ${publicUrl}`, 'success');
-            toast.success('Hero Section photo compressed & hosted on Supabase!');
+            toast.success('Image selected');
           } catch (err: any) {
-            addLog(`⚠️ Supabase photo upload fallback note: ${err.message}`, 'warn');
             const reader = new FileReader();
             reader.readAsDataURL(compressedResult);
             reader.onloadend = () => {
               const base64 = reader.result as string;
               // Store exactly ONE photo as backup data URL
               update('uploaded_photos_urls', [base64]);
-              addLog('🔒 Stored hero photo as compressed Data URL backup for Hero Section!', 'info');
+              toast.success('Image selected');
             };
           }
           setIsUploadingPhoto(false);
@@ -989,44 +941,6 @@ function StepHeroPhoto({ data, update }: any) {
           </div>
         </label>
 
-        {/* ── Live Log Terminal Box ── */}
-        {liveLogs.length > 0 && (
-          <div className={styles.logTerminal} style={{ marginTop: 16 }}>
-            <div className={styles.logTerminalHeader}>
-              <div className={styles.logTerminalDots}>
-                <span style={{ background: '#ef4444' }} />
-                <span style={{ background: '#f59e0b' }} />
-                <span style={{ background: '#10b981' }} />
-              </div>
-              <span className={styles.logTerminalTitle}>⚡ Hero Photo Optimization &amp; Upload Logs</span>
-              {isCompressingPhoto || isUploadingPhoto ? <Loader2 size={14} className={styles.spinnerIcon} color="#38bdf8" /> : <CheckCircle2 size={14} color="#10b981" />}
-            </div>
-            <div className={styles.logTerminalBody}>
-              {liveLogs.map((log, idx) => (
-                <div key={idx} className={`${styles.logLine} ${styles['log_' + log.type]}`}>
-                  <span className={styles.logTime}>[{log.time}]</span>
-                  <span className={styles.logText}>{log.text}</span>
-                </div>
-              ))}
-            </div>
-          </div>
-        )}
-
-        {(isCompressingPhoto || isUploadingPhoto || photoStats) && (
-          <div style={{ textAlign: 'center', marginTop: 12 }}>
-            {isCompressingPhoto || isUploadingPhoto ? (
-              <div className={styles.compressionBadge} style={{ background: '#eff6ff', borderColor: '#3b82f6', color: '#1d4ed8' }}>
-                <Loader2 size={14} className={styles.spinnerIcon} />
-                {isCompressingPhoto ? 'Compressing hero photo with Compressor.js...' : 'Uploading hero photo to Supabase Storage...'}
-              </div>
-            ) : (
-              <div className={styles.compressionBadge}>
-                <Zap size={14} />
-                {photoStats}
-              </div>
-            )}
-          </div>
-        )}
 
         {data.uploaded_photos_urls && data.uploaded_photos_urls.length > 0 && (
           <div style={{ marginTop: 20, padding: '18px', background: '#f8fafc', borderRadius: '12px', border: '1px solid #cbd5e1' }}>

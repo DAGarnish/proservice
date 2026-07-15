@@ -53,6 +53,7 @@ WEBSITE REQUIREMENTS
 - Specialist tools or equipment
 - Guarantees or promises
 - Notable work if available
+- ALIGNMENT: If using a bulleted or checkbox list under a centered heading, use CSS 'margin: 0 auto; width: fit-content;' on the list container so the list block is perfectly centered on the page while keeping the text inside it cleanly left-aligned.
 
 7. SERVICE AREA & INTERACTIVE GOOGLE MAP SECTION — CRITICAL
 - Show the main town/city and full service area list.
