@@ -53,6 +53,7 @@ export interface FormData {
   logo_prompt?: string;
   photos_uploaded: boolean;
   uploaded_photos_urls?: string[];
+  secondary_photos_urls?: string[];
   example_websites: string;
   avoid_on_site: string;
 

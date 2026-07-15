@@ -143,6 +143,7 @@ export default function GetStartedPage() {
           <div id="step-hero-photo" className={styles.singlePageSection}>
             <div className={styles.sectionNumberBadge}>5. Hero Image &amp; Business Photos</div>
             <StepHeroPhoto data={formData} update={updateField} />
+            <StepSecondaryPhotos data={formData} update={updateField} />
           </div>
 
           <div id="step-5" className={styles.singlePageSection}>
@@ -222,7 +223,7 @@ function Step1BusinessBasics({ data, update, errors }: any) {
                className={`form-input ${errors.business_name ? 'error' : ''}`}
                value={data.business_name} 
                onChange={e => update('business_name', e.target.value)} 
-               placeholder="e.g. John's Plumbing"
+               placeholder="e.g. John's Pool Services"
             />
             <FieldError error={errors.business_name} />
          </div>
@@ -921,7 +922,7 @@ function StepHeroPhoto({ data, update }: any) {
     <div className={styles.stepContent}>
       <div className={styles.stepHeader}>
         <h2>Hero Section Background / Banner Image</h2>
-        <p>Upload the single best photo representing your business, work, or team. This photo will be prominently featured directly inside the top Hero Banner of your AI-generated website!</p>
+        <p>Upload the single best <strong>hi-res</strong> photo representing your business, work, or team. This photo will be prominently featured directly inside the top Hero Banner of your AI-generated website!</p>
       </div>
 
       <div className="form-group" style={{ marginTop: 'var(--space-6)' }}>
@@ -937,7 +938,7 @@ function StepHeroPhoto({ data, update }: any) {
             Click or drag &amp; drop to upload your Hero Section Image
           </div>
           <div style={{ fontSize: 'var(--text-xs)', color: 'var(--color-gray-500)', marginTop: 6 }}>
-            Select a high-res JPG, PNG, or WEBP photo — Automatically compressed &amp; displayed in your Hero Section (1 photo limit)
+            Select a <strong>hi-res</strong> JPG, PNG, or WEBP photo — Automatically compressed &amp; displayed in your Hero Section (1 photo limit)
           </div>
         </label>
 
@@ -963,6 +964,113 @@ function StepHeroPhoto({ data, update }: any) {
                 </button>
               </div>
             </div>
+          </div>
+        )}
+      </div>
+    </div>
+  );
+}
+
+function StepSecondaryPhotos({ data, update }: any) {
+  const [isCompressingPhoto, setIsCompressingPhoto] = useState(false);
+  const [isUploadingPhoto, setIsUploadingPhoto] = useState(false);
+
+  const handlePhotoUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const files = e.target.files;
+    if (!files || files.length === 0) return;
+
+    const currentPhotos = data.secondary_photos_urls || [];
+    if (currentPhotos.length >= 4) {
+      toast.error('You can only upload up to 4 secondary photos.');
+      return;
+    }
+
+    setIsCompressingPhoto(true);
+    setIsUploadingPhoto(false);
+    
+    const file = files[0];
+    
+    await new Promise<void>((resolve) => {
+      new Compressor(file, {
+        quality: 0.7,
+        maxWidth: 1600,
+        maxHeight: 1600,
+        mimeType: file.type.includes('png') ? 'image/png' : 'image/jpeg',
+        async success(compressedResult: Blob | File) {
+          setIsUploadingPhoto(true);
+
+          try {
+            const publicUrl = await uploadLogoToSupabase(compressedResult, `secondary_photo_${Date.now()}_${file.name}`);
+            update('secondary_photos_urls', [...currentPhotos, publicUrl]);
+            toast.success('Image selected');
+          } catch (err: any) {
+            const reader = new FileReader();
+            reader.readAsDataURL(compressedResult);
+            reader.onloadend = () => {
+              const base64 = reader.result as string;
+              update('secondary_photos_urls', [...currentPhotos, base64]);
+              toast.success('Image selected');
+            };
+          }
+          setIsUploadingPhoto(false);
+          resolve();
+        },
+        error(err) {
+          toast.error('Failed to compress photo.');
+          resolve();
+        },
+      });
+    });
+    setIsCompressingPhoto(false);
+  };
+
+  const removePhoto = (index: number) => {
+    const currentPhotos = data.secondary_photos_urls || [];
+    const newPhotos = [...currentPhotos];
+    newPhotos.splice(index, 1);
+    update('secondary_photos_urls', newPhotos);
+  };
+
+  return (
+    <div className={styles.stepContent} style={{ marginTop: '2rem', borderTop: '1px solid #e2e8f0', paddingTop: '2rem' }}>
+      <div className={styles.stepHeader}>
+        <h3 style={{ fontSize: '1.4rem', fontWeight: 700, marginBottom: '8px' }}>Secondary Photos (Optional)</h3>
+        <p>Upload up to 4 additional <strong>hi-res</strong> photos to show off your work, your team, or your equipment.</p>
+      </div>
+
+      <div className="form-group" style={{ marginTop: 'var(--space-4)' }}>
+        <label className={styles.uploadArea}>
+          <input
+            type="file"
+            accept="image/*"
+            style={{ display: 'none' }}
+            onChange={handlePhotoUpload}
+            disabled={(data.secondary_photos_urls || []).length >= 4}
+          />
+          <ImageIcon size={32} style={{ margin: '0 auto 8px', color: 'var(--color-primary)' }} />
+          <div style={{ fontWeight: 600, color: 'var(--color-gray-900)' }}>
+            Click or drag &amp; drop to upload a secondary photo
+          </div>
+          <div style={{ fontSize: 'var(--text-xs)', color: 'var(--color-gray-500)', marginTop: 4 }}>
+            Up to 4 photos allowed ({(data.secondary_photos_urls || []).length}/4)
+          </div>
+        </label>
+
+        {data.secondary_photos_urls && data.secondary_photos_urls.length > 0 && (
+          <div style={{ marginTop: 20, display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(140px, 1fr))', gap: '16px' }}>
+            {data.secondary_photos_urls.map((url: string, idx: number) => (
+              <div key={idx} style={{ position: 'relative', width: '100%', height: 120, borderRadius: 8, overflow: 'hidden', border: '2px solid #e2e8f0' }}>
+                <img src={url} alt={`Secondary Photo ${idx + 1}`} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+                <button
+                  type="button"
+                  onClick={() => removePhoto(idx)}
+                  style={{ position: 'absolute', top: 6, right: 6, background: 'rgba(239, 68, 68, 0.95)', color: '#fff', border: 'none', borderRadius: '50%', width: 24, height: 24, cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 12, fontWeight: 700, boxShadow: '0 2px 4px rgba(0,0,0,0.3)' }}
+                  title="Remove photo"
+                >
+                  ✕
+                </button>
+              </div>
+            ))}
           </div>
         )}
       </div>
@@ -1098,9 +1206,9 @@ function Step7AddOns({ data, update, errors }: any) {
                onChange={e => update('branded_domain_option', e.target.checked)}
             />
             <span className="form-checkbox-label">
-               <strong style={{ display: 'block', marginBottom: '4px' }}>Extended Refinement & Extra Pages</strong>
-               Need more changes or extra pages? Get up to a 1-hour refinement call with our developers and/or additional pages for your website.
-               <br/><span style={{ color: 'var(--color-primary)', fontWeight: 600, fontSize: '0.85em', display: 'block', marginTop: '4px' }}>$50 one-time</span>
+               <strong style={{ display: 'block', marginBottom: '4px' }}>Deluxe Refinement</strong>
+               Need a lot of changes, fancy stuff or extra pages? <a href="/#faq-deluxe" target="_blank" rel="noopener noreferrer" style={{ textDecoration: 'underline', color: 'var(--color-primary)' }}>Do I need it?</a>
+               <br/><span style={{ color: 'var(--color-primary)', fontWeight: 600, fontSize: '0.85em', display: 'block', marginTop: '4px' }}>$50 p/h</span>
             </span>
          </label>
       </div>
