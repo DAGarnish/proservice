@@ -164,9 +164,9 @@ export default function GetStartedPage() {
           {/* Submit Action Card */}
           <div className={styles.submitActionCard}>
             <div>
-              <h3 style={{ fontSize: '1.6rem', fontWeight: 800, marginBottom: '8px', color: '#fff' }}>Ready to Launch Your AI Website?</h3>
+              <h3 style={{ fontSize: '1.6rem', fontWeight: 800, marginBottom: '8px', color: '#fff' }}>Ready to Launch Your Website?</h3>
               <p style={{ color: '#94a3b8', fontSize: '1.05rem', maxWidth: '540px', margin: '0 auto' }}>
-                Click below to let WEBPRO50 AI compile your brand colors, custom logo, services, interactive Google Map, and contact forms.
+                Click below to let WEBPRO50 AI make the first draft of your website, before we schedule a call with Dave to make the refinements.
               </p>
             </div>
             <button
