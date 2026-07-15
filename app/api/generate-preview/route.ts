@@ -71,36 +71,10 @@ export async function POST(req: NextRequest): Promise<NextResponse<GenerationRes
     // 3. Build structured brief
     const { structured, naturalLanguage } = buildWebsiteBrief(body as FormData);
 
-    // 4. Generate the website HTML
-    // ─────────────────────────────────────────────────────────────────
-    // Uses Gemini if GEMINI_API_KEY is set; falls back to mock preview.
-    // The API key MUST only be read from process.env — never in client code.
-    // ─────────────────────────────────────────────────────────────────
-    const previewData = generateMockPreview(structured);
-    const previewId = previewData.previewId;
+    // 4. Generate a unique ID for the preview (generation deferred until verification)
+    const previewId = crypto.randomUUID();
+    const generatedHtml = ''; // Generated later
 
-    let generatedHtml = '';
-    const hasGemini = !!process.env.GEMINI_API_KEY;
-
-    if (hasGemini) {
-      try {
-        generatedHtml = await generateWebsiteWithGemini(naturalLanguage);
-      } catch (geminiError) {
-        console.error('[PROSERVICE] Gemini generation failed, using mock fallback:', geminiError);
-        // generatedHtml stays empty — preview page will use the mock React render
-      }
-    }
-
-    // ── Guarantee Logo & Photo Embedding + Mobile Header Auto-Close Safeguard ──
-    if (generatedHtml) {
-      generatedHtml = enhanceGeneratedHtml(
-        generatedHtml,
-        body.logo_data_url,
-        body.business_name,
-        Array.isArray(body.uploaded_photos_urls) ? body.uploaded_photos_urls : [],
-        body.business_address || body.main_city || body.service_area || 'USA'
-      );
-    }
 
     // 5. Create or Update User account in database (`User` table) & Save submission
     const verificationToken = crypto.randomUUID();
@@ -167,6 +141,7 @@ export async function POST(req: NextRequest): Promise<NextResponse<GenerationRes
       match_logo_colours: Boolean(body.match_logo_colours),
       logo_uploaded: Boolean(body.logo_uploaded),
       logo_data_url: body.logo_data_url || '',
+      logo_prompt: body.logo_prompt || '',
       photos_uploaded: Boolean(body.photos_uploaded),
       uploaded_photos_urls: Array.isArray(body.uploaded_photos_urls) ? body.uploaded_photos_urls : [],
       example_websites: body.example_websites || '',
@@ -245,7 +220,6 @@ export async function POST(req: NextRequest): Promise<NextResponse<GenerationRes
     return NextResponse.json({
       success: true,
       previewId,
-      previewData,
       userId,
       verificationToken,
     });

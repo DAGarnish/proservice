@@ -20,7 +20,6 @@ export default function GetStartedPage() {
   const [errors, setErrors] = useState<StepErrors>({});
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [submitError, setSubmitError] = useState('');
-  const [buildLogs, setBuildLogs] = useState<Array<{ time: string; text: string; type: 'info' | 'success' | 'warn' | 'error' }>>([]);
 
   const handleBuildWebsite = () => {
     const allErrors = validateAllSteps(formData);
@@ -55,45 +54,8 @@ export default function GetStartedPage() {
   const handleSubmit = async () => {
     setIsSubmitting(true);
     setSubmitError('');
-    setBuildLogs([]);
 
-    const addBuildLog = (text: string, type: 'info' | 'success' | 'warn' | 'error' = 'info') => {
-      const now = new Date();
-      const time = `${now.getHours().toString().padStart(2, '0')}:${now.getMinutes().toString().padStart(2, '0')}:${now.getSeconds().toString().padStart(2, '0')}`;
-      setBuildLogs(prev => [...prev, { time, text, type }]);
-    };
-
-    addBuildLog(`🚀 Initializing AI Website Studio for "${formData.business_name}"...`, 'info');
-    addBuildLog(`📋 Compiling business brief: ${formData.occupation} in ${formData.main_city}...`, 'info');
-    addBuildLog(`🔐 Preparing User account & verification email dispatch for "${formData.email_address}"...`, 'info');
-    if (formData.logo_data_url) {
-      if (formData.logo_data_url.includes('supabase.co')) {
-        addBuildLog(`🖼️ Guaranteeing Supabase-hosted logo embedding: ${formData.logo_data_url.slice(0, 40)}...`, 'success');
-      } else {
-        addBuildLog(`🖼️ Guaranteeing compressed logo embedding into website layout!`, 'success');
-      }
-    }
-    addBuildLog(`🤖 Connecting to Google Gemini AI to generate full-stack HTML & CSS...`, 'info');
-
-    const toastId = toast.loading('Submitting your preferences and generating website...');
-
-    const progressInterval = setInterval(() => {
-      const msgs = [
-        `🎨 Applying "${formData.selected_website_look}" brand palette & typography...`,
-        `📝 Generating SEO copy, service cards, and about section...`,
-        `📱 Formatting responsive header navigation & contact forms...`,
-        `🖼️ Guaranteeing logo embedding in header navbar and footer...`,
-        `💾 Finalizing layout and preparing live interactive preview...`
-      ];
-      setBuildLogs(prev => {
-        if (prev.length < msgs.length + 4) {
-          const now = new Date();
-          const time = `${now.getHours().toString().padStart(2, '0')}:${now.getMinutes().toString().padStart(2, '0')}:${now.getSeconds().toString().padStart(2, '0')}`;
-          return [...prev, { time, text: msgs[prev.length - 4] || '⏳ Optimizing website assets...', type: 'info' }];
-        }
-        return prev;
-      });
-    }, 1800);
+    const toastId = toast.loading('Submitting your details and dispatching verification email...');
 
     try {
       const response = await fetch('/api/generate-preview', {
@@ -102,51 +64,31 @@ export default function GetStartedPage() {
         body: JSON.stringify(formData),
       });
 
-      clearInterval(progressInterval);
       const data = await response.json();
 
       if (!response.ok || !data.success) {
         throw new Error(data.error || 'Failed to generate preview');
       }
 
-      addBuildLog(`💾 Saving project & User account to PostgreSQL database...`, 'info');
-      addBuildLog(`📧 Verification email dispatched to ${formData.email_address}!`, 'success');
-      addBuildLog(`✅ Website successfully generated with Gemini AI!`, 'success');
-      addBuildLog(`🎉 Redirecting to live interactive preview...`, 'success');
-
       toast.update(toastId, {
-        render: '🎉 Successfully submitted! Redirecting to your website preview...',
+        render: '🎉 Details saved! Please check your email to verify...',
         type: 'success',
         isLoading: false,
         autoClose: 2500,
       });
 
-      // Save generated preview in session storage for instant loading / resilience against DB connection drops
-      try {
-        if (data.generatedHtml) {
-          sessionStorage.setItem('proservice_preview_' + data.previewId, JSON.stringify({
-            generatedHtml: data.generatedHtml,
-            brief: formData
-          }));
-        }
-      } catch (e) {}
-
-      // Redirect to preview screen
+      // Redirect to verification screen
       if (data.previewId) {
-         setTimeout(() => {
-           const encodedEmail = encodeURIComponent(formData.email_address.trim().toLowerCase());
-           const tokenParam = data.verificationToken ? `&token=${data.verificationToken}` : '';
-           router.push(`/verify-email?sent=true&email=${encodedEmail}${tokenParam}&previewId=${data.previewId}`);
-         }, 800);
+         const encodedEmail = encodeURIComponent(formData.email_address.trim().toLowerCase());
+         const tokenParam = data.verificationToken ? `&token=${data.verificationToken}` : '';
+         router.push(`/verify-email?sent=true&email=${encodedEmail}${tokenParam}&previewId=${data.previewId}`);
       } else {
          throw new Error("No preview ID returned");
       }
       
     } catch (err: any) {
-      clearInterval(progressInterval);
       const errorMessage = err.message || 'An unexpected error occurred.';
       setSubmitError(errorMessage);
-      addBuildLog(`❌ Build error: ${errorMessage}`, 'error');
       toast.update(toastId, {
         render: `❌ Error: ${errorMessage}`,
         type: 'error',
@@ -236,7 +178,7 @@ export default function GetStartedPage() {
               {isSubmitting ? (
                 <>
                   <Loader2 size={22} className={styles.spinnerIcon} />
-                  Generating Your Website...
+                  Submitting...
                 </>
               ) : (
                 <>
@@ -246,39 +188,7 @@ export default function GetStartedPage() {
               )}
             </button>
           </div>
-
         </div>
-
-        {/* ── Live Build Generation Terminal Modal ── */}
-        {isSubmitting && (
-          <div className={styles.buildModalOverlay}>
-            <div className={styles.buildModalBox}>
-              <div className={styles.logTerminalHeader}>
-                <div className={styles.logTerminalDots}>
-                  <span style={{ background: '#ef4444' }} />
-                  <span style={{ background: '#f59e0b' }} />
-                  <span style={{ background: '#10b981' }} />
-                </div>
-                <span className={styles.logTerminalTitle}>🤖 WEBPRO50 AI Website Studio — Live Generation Logs</span>
-                <Loader2 size={16} className={styles.spinnerIcon} color="#10b981" />
-              </div>
-              <div className={styles.logTerminalBody} style={{ minHeight: '220px', maxHeight: '350px' }}>
-                {buildLogs.map((log, idx) => (
-                  <div key={idx} className={`${styles.logLine} ${styles['log_' + log.type]}`}>
-                    <span className={styles.logTime}>[{log.time}]</span>
-                    <span className={styles.logText}>{log.text}</span>
-                  </div>
-                ))}
-                <div className={styles.logLine}>
-                  <span className={styles.logTime}>[{new Date().toLocaleTimeString()}]</span>
-                  <span className={styles.logText} style={{ color: '#10b981' }}>
-                    ⏳ Please wait, AI is compiling your professional website...
-                  </span>
-                </div>
-              </div>
-            </div>
-          </div>
-        )}
       </div>
     </div>
   );
@@ -900,8 +810,8 @@ function Step4Brand({ data, update, errors }: any) {
                      <input
                        type="text"
                        className="form-input"
-                       value={logoPrompt}
-                       onChange={e => setLogoPrompt(e.target.value)}
+                       value={data.logo_prompt || ''}
+                       onChange={e => update('logo_prompt', e.target.value)}
                        placeholder={`e.g. Minimalist emblem for ${data.business_name || 'my business'}, professional ${data.occupation || 'services'}`}
                      />
                      <div className="form-hint" style={{ marginTop: 4 }}>
@@ -914,26 +824,6 @@ function Step4Brand({ data, update, errors }: any) {
                        ❌ Error: {genError}
                      </div>
                    )}
-
-                   <button
-                     type="button"
-                     className="btn btn-primary"
-                     style={{ width: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8 }}
-                     onClick={handleGenerateLogo}
-                     disabled={isGenerating || isCompressing || isUploadingSupabase}
-                   >
-                     {isGenerating || isCompressing || isUploadingSupabase ? (
-                       <>
-                         <Loader2 size={16} className={styles.spinnerIcon} />
-                         {isGenerating ? 'Designing with WEBPRO50 AI...' : isCompressing ? 'Compressing image...' : 'Uploading to Supabase...'}
-                       </>
-                     ) : (
-                       <>
-                         <Sparkles size={16} />
-                         Generate Logo with WEBPRO50 AI
-                       </>
-                     )}
-                   </button>
                  </div>
                )}
 

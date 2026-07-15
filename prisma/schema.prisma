@@ -71,6 +71,7 @@ model WebsiteSubmission {
   match_logo_colours    Boolean  @default(false)
   logo_uploaded         Boolean  @default(false)
   logo_data_url         String?  @default("")
+  logo_prompt           String?  @default("")
   photos_uploaded       Boolean  @default(false)
   uploaded_photos_urls  String[] @default([])
   example_websites      String?  @default("")

@@ -50,6 +50,7 @@ export interface FormData {
   match_logo_colours: boolean;
   logo_uploaded: boolean;
   logo_data_url?: string;
+  logo_prompt?: string;
   photos_uploaded: boolean;
   uploaded_photos_urls?: string[];
   example_websites: string;
@@ -114,6 +115,7 @@ export const defaultFormData: FormData = {
   match_logo_colours: false,
   logo_uploaded: true,
   logo_data_url: '',
+  logo_prompt: '',
   photos_uploaded: false,
   uploaded_photos_urls: [],
   example_websites: '',

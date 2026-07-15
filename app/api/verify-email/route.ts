@@ -1,8 +1,13 @@
 // app/api/verify-email/route.ts
 // SECURE endpoint to verify user email address in the User table
+export const maxDuration = 60; // Allow up to 60s for Vercel Hobby
+
 import { NextRequest, NextResponse } from 'next/server';
 import { prisma, withPrismaRetry } from '@/lib/prisma';
 import { sendWelcomePreviewEmail } from '@/lib/email';
+import { buildWebsiteBrief } from '@/lib/promptBuilder';
+import { generateWebsiteWithGemini } from '@/lib/geminiGenerator';
+import { enhanceGeneratedHtml } from '@/lib/htmlSafeguard';
 
 export async function GET(req: NextRequest) {
   const { searchParams } = new URL(req.url);
@@ -35,14 +40,82 @@ export async function GET(req: NextRequest) {
     );
 
     let targetPreviewId = previewId;
+    let sub: any = null;
+
     if (!targetPreviewId) {
-      const sub: any = await withPrismaRetry(() =>
+      sub = await withPrismaRetry(() =>
         (prisma as any).websiteSubmission.findFirst({
           where: { userId: user.id },
           orderBy: { createdAt: 'desc' },
         })
       );
       if (sub) targetPreviewId = sub.id;
+    } else {
+      sub = await withPrismaRetry(() =>
+        (prisma as any).websiteSubmission.findFirst({
+          where: { id: targetPreviewId },
+        })
+      );
+    }
+
+    // GENERATE WEBSITE UPON VERIFICATION
+    if (sub && (!sub.generatedHtml || sub.generatedHtml.trim() === '')) {
+       try {
+         let finalLogoUrl = sub.logo_data_url;
+
+         // Generate Logo if a prompt was provided and no existing logo was uploaded
+         if (sub.logo_prompt && !finalLogoUrl) {
+            try {
+               const GEMINI_API_URL = 'https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent';
+               const apiKey = process.env.GEMINI_API_KEY;
+               if (apiKey) {
+                 const logoResponse = await fetch(`${GEMINI_API_URL}?key=${apiKey}`, {
+                   method: 'POST',
+                   headers: { 'Content-Type': 'application/json' },
+                   body: JSON.stringify({
+                     system_instruction: { parts: [{ text: "You are a logo generator. Return ONLY raw valid SVG code starting with <svg> and ending with </svg>." }] },
+                     contents: [{ role: 'user', parts: [{ text: `Generate a modern logo for Business: "${sub.business_name || 'My Business'}", Industry: "${sub.occupation || 'Services'}". Prompt: "${sub.logo_prompt}"` }] }],
+                     generationConfig: { temperature: 0.8, maxOutputTokens: 8192, responseMimeType: 'text/plain' },
+                   }),
+                 });
+                 if (logoResponse.ok) {
+                   const result = await logoResponse.json();
+                   const rawText = result?.candidates?.[0]?.content?.parts?.[0]?.text || '';
+                   const svgMatch = rawText.match(/(<svg[^>]*>[\s\S]*<\/svg>)/i);
+                   if (svgMatch) {
+                     const cleanedSvg = svgMatch[1].trim();
+                     const base64Svg = Buffer.from(cleanedSvg).toString('base64');
+                     finalLogoUrl = `data:image/svg+xml;base64,${base64Svg}`;
+                   }
+                 }
+               }
+            } catch (err) {
+               console.error('[PROSERVICE] Background logo generation failed:', err);
+            }
+         }
+
+         const { naturalLanguage } = buildWebsiteBrief(sub);
+         let generatedHtml = await generateWebsiteWithGemini(naturalLanguage);
+         
+         if (generatedHtml) {
+           generatedHtml = enhanceGeneratedHtml(
+             generatedHtml,
+             finalLogoUrl,
+             sub.business_name,
+             Array.isArray(sub.uploaded_photos_urls) ? sub.uploaded_photos_urls : [],
+             sub.business_address || sub.main_city || sub.service_area || 'USA'
+           );
+
+           await withPrismaRetry(() =>
+             (prisma as any).websiteSubmission.update({
+               where: { id: sub.id },
+               data: { generatedHtml },
+             })
+           );
+         }
+       } catch (genErr) {
+         console.error('[PROSERVICE] AI generation failed during verification:', genErr);
+       }
     }
 
     try {
