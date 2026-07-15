@@ -167,6 +167,7 @@ export async function generateWebsiteWithGemini(naturalLanguageBrief: string): P
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify(requestBody),
+    cache: 'no-store',
   });
 
   if (!response.ok) {

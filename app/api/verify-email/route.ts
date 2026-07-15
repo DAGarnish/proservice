@@ -2,7 +2,7 @@
 // SECURE endpoint to verify user email address in the User table
 export const maxDuration = 60; // Allow up to 60s for Vercel Hobby
 
-import { NextRequest, NextResponse } from 'next/server';
+import { NextRequest, NextResponse, after } from 'next/server';
 import { prisma, withPrismaRetry } from '@/lib/prisma';
 import { sendWelcomePreviewEmail } from '@/lib/email';
 import { buildWebsiteBrief } from '@/lib/promptBuilder';
@@ -49,85 +49,88 @@ export async function GET(req: NextRequest) {
           orderBy: { createdAt: 'desc' },
         })
       );
-      if (sub) targetPreviewId = sub.id;
+      if (sub) targetPreviewId = sub.previewId;
     } else {
       sub = await withPrismaRetry(() =>
         (prisma as any).websiteSubmission.findFirst({
-          where: { id: targetPreviewId },
+          where: { previewId: targetPreviewId },
         })
       );
     }
 
-    // GENERATE WEBSITE UPON VERIFICATION
-    if (sub && (!sub.generatedHtml || sub.generatedHtml.trim() === '')) {
-       try {
-         let finalLogoUrl = sub.logo_data_url;
+    // RUN GENERATION AND EMAIL SENDING IN THE BACKGROUND
+    after(async () => {
+      // GENERATE WEBSITE UPON VERIFICATION
+      if (sub && (!sub.generatedHtml || sub.generatedHtml.trim() === '')) {
+         try {
+           let finalLogoUrl = sub.logo_data_url;
 
-         // Generate Logo if a prompt was provided and no existing logo was uploaded
-         if (sub.logo_prompt && !finalLogoUrl) {
-            try {
-               const GEMINI_API_URL = 'https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent';
-               const apiKey = process.env.GEMINI_API_KEY;
-               if (apiKey) {
-                 const logoResponse = await fetch(`${GEMINI_API_URL}?key=${apiKey}`, {
-                   method: 'POST',
-                   headers: { 'Content-Type': 'application/json' },
-                   body: JSON.stringify({
-                     system_instruction: { parts: [{ text: "You are an expert, award-winning logo designer. Your ONLY job is to output a beautifully aesthetic, modern, and highly premium raw SVG code. Do not output anything other than the exact SVG code starting with <svg> and ending with </svg>." }] },
-                     contents: [{ role: 'user', parts: [{ text: `Generate a stunning, modern vector logo for Business: "${sub.business_name || 'My Business'}", Industry: "${sub.occupation || 'Services'}". Prompt: "${sub.logo_prompt}". Ensure it has a transparent background, cohesive brand colors, perfectly scaled proportions (use viewBox), and crisp, professional vector shapes.` }] }],
-                     generationConfig: { temperature: 0.8, maxOutputTokens: 8192, responseMimeType: 'text/plain' },
-                   }),
-                 });
-                 if (logoResponse.ok) {
-                   const result = await logoResponse.json();
-                   const rawText = result?.candidates?.[0]?.content?.parts?.[0]?.text || '';
-                   const svgMatch = rawText.match(/(<svg[^>]*>[\s\S]*<\/svg>)/i);
-                   if (svgMatch) {
-                     const cleanedSvg = svgMatch[1].trim();
-                     const base64Svg = Buffer.from(cleanedSvg).toString('base64');
-                     finalLogoUrl = `data:image/svg+xml;base64,${base64Svg}`;
+           // Generate Logo if a prompt was provided and no existing logo was uploaded
+           if (sub.logo_prompt && !finalLogoUrl) {
+              try {
+                 const GEMINI_API_URL = 'https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent';
+                 const apiKey = process.env.GEMINI_API_KEY;
+                 if (apiKey) {
+                   const logoResponse = await fetch(`${GEMINI_API_URL}?key=${apiKey}`, {
+                     method: 'POST',
+                     headers: { 'Content-Type': 'application/json' },
+                     body: JSON.stringify({
+                       system_instruction: { parts: [{ text: "You are an expert, award-winning logo designer. Your ONLY job is to output a beautifully aesthetic, modern, and highly premium raw SVG code. Do not output anything other than the exact SVG code starting with <svg> and ending with </svg>." }] },
+                       contents: [{ role: 'user', parts: [{ text: `Generate a stunning, modern vector logo for Business: "${sub.business_name || 'My Business'}", Industry: "${sub.occupation || 'Services'}". Prompt: "${sub.logo_prompt}". Ensure it has a transparent background, cohesive brand colors, perfectly scaled proportions (use viewBox), and crisp, professional vector shapes.` }] }],
+                       generationConfig: { temperature: 0.8, maxOutputTokens: 8192, responseMimeType: 'text/plain' },
+                     }),
+                   });
+                   if (logoResponse.ok) {
+                     const result = await logoResponse.json();
+                     const rawText = result?.candidates?.[0]?.content?.parts?.[0]?.text || '';
+                     const svgMatch = rawText.match(/(<svg[^>]*>[\s\S]*<\/svg>)/i);
+                     if (svgMatch) {
+                       const cleanedSvg = svgMatch[1].trim();
+                       const base64Svg = Buffer.from(cleanedSvg).toString('base64');
+                       finalLogoUrl = `data:image/svg+xml;base64,${base64Svg}`;
+                     }
                    }
                  }
-               }
-            } catch (err) {
-               console.error('[PROSERVICE] Background logo generation failed:', err);
-            }
+              } catch (err) {
+                 console.error('[PROSERVICE] Background logo generation failed:', err);
+              }
+           }
+
+           const { naturalLanguage } = buildWebsiteBrief(sub);
+           let generatedHtml = await generateWebsiteWithGemini(naturalLanguage);
+           
+           if (generatedHtml) {
+             generatedHtml = enhanceGeneratedHtml(
+               generatedHtml,
+               finalLogoUrl,
+               sub.business_name,
+               Array.isArray(sub.uploaded_photos_urls) ? sub.uploaded_photos_urls : [],
+               sub.business_address || sub.main_city || sub.service_area || 'USA'
+             );
+
+             await withPrismaRetry(() =>
+               (prisma as any).websiteSubmission.update({
+                 where: { id: sub.id },
+                 data: { generatedHtml },
+               })
+             );
+           }
+         } catch (genErr) {
+           console.error('[PROSERVICE] AI generation failed during verification:', genErr);
          }
+      }
 
-         const { naturalLanguage } = buildWebsiteBrief(sub);
-         let generatedHtml = await generateWebsiteWithGemini(naturalLanguage);
-         
-         if (generatedHtml) {
-           generatedHtml = enhanceGeneratedHtml(
-             generatedHtml,
-             finalLogoUrl,
-             sub.business_name,
-             Array.isArray(sub.uploaded_photos_urls) ? sub.uploaded_photos_urls : [],
-             sub.business_address || sub.main_city || sub.service_area || 'USA'
-           );
-
-           await withPrismaRetry(() =>
-             (prisma as any).websiteSubmission.update({
-               where: { id: sub.id },
-               data: { generatedHtml },
-             })
-           );
-         }
-       } catch (genErr) {
-         console.error('[PROSERVICE] AI generation failed during verification:', genErr);
-       }
-    }
-
-    try {
-      await sendWelcomePreviewEmail(
-        updatedUser.email,
-        updatedUser.name,
-        updatedUser.businessName || updatedUser.name || 'Your Business',
-        targetPreviewId
-      );
-    } catch (emailErr) {
-      console.error('[PROSERVICE] Failed to send welcome preview email:', emailErr);
-    }
+      try {
+        await sendWelcomePreviewEmail(
+          updatedUser.email,
+          updatedUser.name,
+          updatedUser.businessName || updatedUser.name || 'Your Business',
+          targetPreviewId
+        );
+      } catch (emailErr) {
+        console.error('[PROSERVICE] Failed to send welcome preview email:', emailErr);
+      }
+    });
 
     return NextResponse.json({
       success: true,
