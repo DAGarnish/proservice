@@ -559,3 +559,106 @@ export async function sendWelcomePreviewEmail(
   }
 }
 
+export async function sendContactFormEmail(
+  firstName: string,
+  lastName: string,
+  email: string,
+  phone: string,
+  message: string
+): Promise<void> {
+  const gmailUser = process.env.GMAIL_USER;
+  const gmailPass = process.env.GMAIL_APP_PASSWORD;
+  const receiverEmail = process.env.RECEIVER_EMAIL || gmailUser;
+
+  if (!gmailUser || !gmailPass || !receiverEmail) {
+    console.warn('[PROSERVICE] Email credentials not configured. Skipping contact email.');
+    return;
+  }
+
+  const transporter = nodemailer.createTransport({
+    service: 'gmail',
+    auth: {
+      user: gmailUser,
+      pass: gmailPass,
+    },
+  });
+
+  const subject = `📩 New Contact Form Submission from ${firstName} ${lastName}`;
+
+  const htmlContent = `
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <title>New Contact Submission</title>
+</head>
+<body style="margin: 0; padding: 0; font-family: 'Inter', sans-serif; background-color: #f3f4f6; color: #1f2937;">
+  <table width="100%" border="0" cellpadding="0" cellspacing="0" style="padding: 40px 20px;">
+    <tr>
+      <td align="center">
+        <table width="100%" border="0" cellpadding="0" cellspacing="0" style="max-width: 600px; background-color: #ffffff; border-radius: 12px; overflow: hidden; box-shadow: 0 4px 15px rgba(0,0,0,0.05);">
+          <tr>
+            <td style="background-color: #111827; padding: 32px 40px; text-align: center; border-bottom: 4px solid #1a56db;">
+              <div style="font-family: 'Outfit', 'Inter', sans-serif; font-size: 28px; font-weight: 800; color: #ffffff; letter-spacing: -0.5px;">
+                WEB<span style="color: #1a56db;">PRO50</span>
+              </div>
+              <div style="color: #9ca3af; font-size: 14px; font-weight: 500; margin-top: 6px; text-transform: uppercase; letter-spacing: 1px;">
+                New Contact Message
+              </div>
+            </td>
+          </tr>
+          <tr>
+            <td style="padding: 30px;">
+              <p style="margin: 0 0 20px 0; font-size: 16px;">You have received a new message from your website contact form:</p>
+              
+              <table width="100%" border="0" cellpadding="0" cellspacing="0" style="margin-bottom: 20px; border-collapse: collapse;">
+                <tr>
+                  <td style="padding: 10px; border-bottom: 1px solid #e5e7eb; width: 120px; font-weight: bold; color: #4b5563;">Name:</td>
+                  <td style="padding: 10px; border-bottom: 1px solid #e5e7eb;">${firstName} ${lastName}</td>
+                </tr>
+                <tr>
+                  <td style="padding: 10px; border-bottom: 1px solid #e5e7eb; font-weight: bold; color: #4b5563;">Email:</td>
+                  <td style="padding: 10px; border-bottom: 1px solid #e5e7eb;"><a href="mailto:${email}" style="color: #2563eb;">${email}</a></td>
+                </tr>
+                <tr>
+                  <td style="padding: 10px; border-bottom: 1px solid #e5e7eb; font-weight: bold; color: #4b5563;">Phone:</td>
+                  <td style="padding: 10px; border-bottom: 1px solid #e5e7eb;">${phone || 'Not provided'}</td>
+                </tr>
+              </table>
+
+              <div style="background-color: #f9fafb; padding: 20px; border-radius: 8px; border: 1px solid #e5e7eb;">
+                <h3 style="margin: 0 0 10px 0; font-size: 14px; text-transform: uppercase; color: #6b7280;">Message</h3>
+                <p style="margin: 0; font-size: 15px; line-height: 1.6; white-space: pre-wrap;">${message}</p>
+              </div>
+            </td>
+          </tr>
+          <tr>
+            <td style="background-color: #1f2937; padding: 24px 40px; text-align: center; color: #9ca3af; font-size: 13px; line-height: 1.6;">
+              <div style="color: #ffffff; font-weight: 700; font-size: 15px; margin-bottom: 6px;">
+                WEBPRO50 Automated Notifications
+              </div>
+              <div>
+                This alert was automatically generated when <strong style="color: #e8f0fe;">${firstName} ${lastName}</strong> submitted a contact form on your website.
+              </div>
+              <div style="margin-top: 12px; font-size: 11px; color: #6b7280;">
+                &copy; ${new Date().getFullYear()} WEBPRO50. All rights reserved.
+              </div>
+            </td>
+          </tr>
+        </table>
+      </td>
+    </tr>
+  </table>
+</body>
+</html>
+  `;
+
+  await transporter.sendMail({
+    from: `"Website Contact" <${gmailUser}>`,
+    to: receiverEmail,
+    replyTo: email,
+    subject,
+    html: htmlContent,
+  });
+}
+
