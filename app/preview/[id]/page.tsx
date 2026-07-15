@@ -17,7 +17,7 @@ import styles from './preview.module.css';
 
 // ─── Types ───────────────────────────────────────────────────────────────────
 
-interface BriefSnippet {
+export interface BriefSnippet {
   business_name: string;
   occupation: string;
   contact_number_to_show: string | null;
@@ -65,6 +65,7 @@ export default function PreviewPage() {
   const [showSavedModal, setShowSavedModal] = useState(false);
   const [savedSites, setSavedSites] = useState<Array<{ previewId: string; business_name: string; occupation: string; savedAt: string }>>([]);
   const [isVerified, setIsVerified] = useState(false);
+  const [isPublishing, setIsPublishing] = useState(false);
   const iframeRef = useRef<HTMLIFrameElement>(null);
 
   useEffect(() => {
@@ -162,6 +163,47 @@ export default function PreviewPage() {
       toast.info('Removed from saved sites');
     } catch (err) {
       console.error(err);
+    }
+  };
+
+  const handlePublishSite = async () => {
+    if (isPublishing) return;
+    setIsPublishing(true);
+    const toastId = toast.loading('Publishing your site online...');
+
+    try {
+      const res = await fetch('/api/publish-site', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ previewId }),
+      });
+      const result = await res.json();
+
+      if (!res.ok || !result.success) {
+        throw new Error(result.error || 'Failed to publish site');
+      }
+
+      toast.update(toastId, {
+        render: '✨ Site published! Redirecting to live site...',
+        type: 'success',
+        isLoading: false,
+        autoClose: 2000,
+      });
+
+      // Redirect to the live dynamic route
+      setTimeout(() => {
+        window.location.href = `/site/${result.slug}`;
+      }, 1000);
+
+    } catch (err: any) {
+      console.error('Publish error:', err);
+      toast.update(toastId, {
+        render: `❌ Error: ${err.message}`,
+        type: 'error',
+        isLoading: false,
+        autoClose: 4000,
+      });
+      setIsPublishing(false);
     }
   };
 
@@ -334,9 +376,13 @@ export default function PreviewPage() {
               <RefreshCw size={14} style={{ marginRight: 6 }} />
               Start Over
             </button>
-            <button className="btn btn-primary">
-              <CheckCircle2 size={14} style={{ marginRight: 6 }} />
-              I Like This — Get Online
+            <button 
+              className="btn btn-primary"
+              onClick={handlePublishSite}
+              disabled={isPublishing}
+            >
+              {isPublishing ? <Loader2 size={14} className={styles.spinnerIcon} style={{ marginRight: 6 }} /> : <CheckCircle2 size={14} style={{ marginRight: 6 }} />}
+              {isPublishing ? 'Publishing...' : 'I Like This — Get Online'}
             </button>
           </div>
         </div>
@@ -526,7 +572,7 @@ export default function PreviewPage() {
 
 // ─── Fallback Mockup (if Gemini didn't generate HTML) ────────────────────────
 
-function FallbackMockup({ brief, palette }: { brief: BriefSnippet; palette: { primary: string; secondary: string; accent: string } }) {
+export function FallbackMockup({ brief, palette }: { brief: BriefSnippet; palette: { primary: string; secondary: string; accent: string } }) {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
 
   // Build service list from brief

@@ -106,6 +106,8 @@ model WebsiteSubmission {
   previewId              String?  @default("")
   // AI-generated website HTML — stored for serving the preview iframe
   generatedHtml          String?  @default("")
+  // Live Dynamic Route Slug
+  slug                   String?  @unique
 }
 
 model ContactSubmission {
