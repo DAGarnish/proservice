@@ -35,6 +35,8 @@ export function validateStep1(data: any): StepErrors {
     errors.email_address = 'Email address is required';
   } else if (!isValidEmail(String(data.email_address))) {
     errors.email_address = 'Please enter a valid email address';
+  } else if (String(data.email_address).trim().toLowerCase() !== String(data.confirm_email_address || '').trim().toLowerCase()) {
+    errors.confirm_email_address = 'Email addresses must match';
   }
   if (!String(data.occupation || '').trim()) {
     errors.occupation = 'Please select or enter your business type';

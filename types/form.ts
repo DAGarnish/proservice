@@ -19,6 +19,7 @@ export interface FormData {
   contact_name: string;
   phone_number: string;
   email_address: string;
+  confirm_email_address: string;
   business_address: string;
   service_area: string;
   occupation: string;
@@ -85,6 +86,7 @@ export const defaultFormData: FormData = {
   contact_name: '',
   phone_number: '',
   email_address: '',
+  confirm_email_address: '',
   business_address: '',
   service_area: '',
   occupation: '',

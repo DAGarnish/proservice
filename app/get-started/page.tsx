@@ -134,7 +134,9 @@ export default function GetStartedPage() {
       // Redirect to preview screen
       if (data.previewId) {
          setTimeout(() => {
-           router.push(`/preview/${data.previewId}`);
+           const encodedEmail = encodeURIComponent(formData.email_address.trim().toLowerCase());
+           const tokenParam = data.verificationToken ? `&token=${data.verificationToken}` : '';
+           router.push(`/verify-email?sent=true&email=${encodedEmail}${tokenParam}&previewId=${data.previewId}`);
          }, 800);
       } else {
          throw new Error("No preview ID returned");
@@ -345,6 +347,17 @@ function Step1BusinessBasics({ data, update, errors }: any) {
             />
             <FieldError error={errors.email_address} />
             <div className="form-hint" style={{marginTop: 4}}>We&apos;ll send your preview link here.</div>
+         </div>
+         <div className="form-group">
+            <label className="form-label">Confirm Email Address <span className="required">*</span></label>
+            <input 
+               type="email" 
+               className={`form-input ${errors.confirm_email_address ? 'error' : ''}`}
+               value={data.confirm_email_address || ''} 
+               onChange={e => update('confirm_email_address', e.target.value)} 
+               placeholder="Confirm your email"
+            />
+            <FieldError error={errors.confirm_email_address} />
          </div>
       </div>
 

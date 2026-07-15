@@ -98,17 +98,13 @@ Return ONLY the raw <svg>...</svg> code.`;
       throw new Error('WEBPRO50 AI returned empty content');
     }
 
-    // Clean up markdown fences if present
-    const cleanedSvg = rawText
-      .replace(/^```xml\s*/i, '')
-      .replace(/^```svg\s*/i, '')
-      .replace(/^```\s*/i, '')
-      .replace(/\s*```\s*$/i, '')
-      .trim();
-
-    if (!cleanedSvg.startsWith('<svg') || !cleanedSvg.includes('</svg>')) {
+    // Extract SVG from response using a regex match
+    const svgMatch = rawText.match(/(<svg[^>]*>[\s\S]*<\/svg>)/i);
+    if (!svgMatch) {
+      console.error('[PROSERVICE] Invalid SVG Output. Raw text:', rawText);
       throw new Error('Generated output was not valid SVG');
     }
+    const cleanedSvg = svgMatch[1].trim();
 
     recordRequest(ip, email_address || 'logo-gen', business_name);
 
