@@ -1,5 +1,6 @@
 import { NextResponse } from 'next/server';
 import { sendContactFormEmail } from '@/lib/email';
+import { prisma } from '@/lib/prisma';
 
 export async function POST(request: Request) {
   try {
@@ -12,6 +13,16 @@ export async function POST(request: Request) {
         { status: 400 }
       );
     }
+
+    await prisma.contactSubmission.create({
+      data: {
+        firstName: first_name,
+        lastName: last_name,
+        email: email_address,
+        phone: phone_number || null,
+        message: message,
+      }
+    });
 
     await sendContactFormEmail(first_name, last_name, email_address, phone_number || '', message);
 

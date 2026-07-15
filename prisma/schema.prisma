@@ -106,3 +106,14 @@ model WebsiteSubmission {
   // AI-generated website HTML — stored for serving the preview iframe
   generatedHtml          String?  @default("")
 }
+
+model ContactSubmission {
+  id        String   @id @default(cuid())
+  createdAt DateTime @default(now())
+
+  firstName String
+  lastName  String
+  email     String
+  phone     String?
+  message   String
+}
