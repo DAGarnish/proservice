@@ -11,10 +11,42 @@ function getAppUrl(): string {
   return (process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000').replace(/\/$/, '');
 }
 
+// Helper to get email credentials supporting EMAIL_ADMIN / EMAIL_PASSWORD or legacy GMAIL_USER / GMAIL_APP_PASSWORD
+function getEmailCredentials() {
+  const user = process.env.EMAIL_ADMIN || process.env.EMAIL_USER || process.env.GMAIL_USER;
+  const pass = process.env.EMAIL_PASSWORD || process.env.GMAIL_APP_PASSWORD;
+  return { user, pass };
+}
+
+// Universal Nodemailer transporter helper (supports custom SMTP_HOST or default Gmail/Google Workspace)
+function createMailTransporter(user: string, pass: string) {
+  if (process.env.SMTP_HOST) {
+    const host = process.env.SMTP_HOST;
+    const port = Number(process.env.SMTP_PORT || 587);
+    const secure = process.env.SMTP_SECURE === 'true' || port === 465;
+    console.log(`[PROSERVICE] Using SMTP Transporter -> Host: ${host}, Port: ${port}, Secure: ${secure}, User: ${user}`);
+    return nodemailer.createTransport({
+      host,
+      port,
+      secure,
+      auth: { user, pass },
+      connectionTimeout: 10000,
+      greetingTimeout: 10000,
+      socketTimeout: 10000,
+    });
+  }
+  console.log(`[PROSERVICE] Using Default Gmail/Service Transporter -> Service: ${process.env.SMTP_SERVICE || 'gmail'}, User: ${user}`);
+  return nodemailer.createTransport({
+    service: process.env.SMTP_SERVICE || 'gmail',
+    auth: { user, pass },
+    connectionTimeout: 10000,
+    greetingTimeout: 10000,
+  });
+}
+
 // Create Nodemailer transporter using environment variables
 export async function sendSubmissionEmail(data: FormData, previewId?: string): Promise<void> {
-  const gmailUser = process.env.GMAIL_USER;
-  const gmailPass = process.env.GMAIL_APP_PASSWORD;
+  const { user: gmailUser, pass: gmailPass } = getEmailCredentials();
   const receiverEmail = process.env.RECEIVER_EMAIL || gmailUser;
 
   if (!gmailUser || !gmailPass || !receiverEmail) {
@@ -22,13 +54,7 @@ export async function sendSubmissionEmail(data: FormData, previewId?: string): P
     return;
   }
 
-  const transporter = nodemailer.createTransport({
-    service: 'gmail',
-    auth: {
-      user: gmailUser,
-      pass: gmailPass,
-    },
-  });
+  const transporter = createMailTransporter(gmailUser, gmailPass);
 
   const appUrl = getAppUrl();
   const previewUrl = previewId ? `${appUrl}/preview/${previewId}` : appUrl;
@@ -320,8 +346,7 @@ export async function sendUserVerificationEmail(
   previewId: string,
   verificationToken: string
 ): Promise<void> {
-  const gmailUser = process.env.GMAIL_USER;
-  const gmailPass = process.env.GMAIL_APP_PASSWORD;
+  const { user: gmailUser, pass: gmailPass } = getEmailCredentials();
   const userEmail = data.email_address;
 
   if (!gmailUser || !gmailPass || !userEmail) {
@@ -329,13 +354,7 @@ export async function sendUserVerificationEmail(
     return;
   }
 
-  const transporter = nodemailer.createTransport({
-    service: 'gmail',
-    auth: {
-      user: gmailUser,
-      pass: gmailPass,
-    },
-  });
+  const transporter = createMailTransporter(gmailUser, gmailPass);
 
   const appUrl = getAppUrl();
   const previewUrl = `${appUrl}/preview/${previewId}`;
@@ -440,21 +459,14 @@ export async function sendWelcomePreviewEmail(
   businessName: string,
   previewId?: string
 ): Promise<void> {
-  const gmailUser = process.env.GMAIL_USER;
-  const gmailPass = process.env.GMAIL_APP_PASSWORD;
+  const { user: gmailUser, pass: gmailPass } = getEmailCredentials();
 
   if (!gmailUser || !gmailPass || !userEmail) {
     console.warn('[PROSERVICE] Email credentials not configured. Skipping welcome preview email.');
     return;
   }
 
-  const transporter = nodemailer.createTransport({
-    service: 'gmail',
-    auth: {
-      user: gmailUser,
-      pass: gmailPass,
-    },
-  });
+  const transporter = createMailTransporter(gmailUser, gmailPass);
 
   const appUrl = getAppUrl();
   const previewUrl = previewId ? `${appUrl}/preview/${previewId}` : appUrl;
@@ -566,8 +578,7 @@ export async function sendContactFormEmail(
   phone: string,
   message: string
 ): Promise<void> {
-  const gmailUser = process.env.GMAIL_USER;
-  const gmailPass = process.env.GMAIL_APP_PASSWORD;
+  const { user: gmailUser, pass: gmailPass } = getEmailCredentials();
   const receiverEmail = process.env.RECEIVER_EMAIL || gmailUser;
 
   if (!gmailUser || !gmailPass || !receiverEmail) {
@@ -575,13 +586,7 @@ export async function sendContactFormEmail(
     return;
   }
 
-  const transporter = nodemailer.createTransport({
-    service: 'gmail',
-    auth: {
-      user: gmailUser,
-      pass: gmailPass,
-    },
-  });
+  const transporter = createMailTransporter(gmailUser, gmailPass);
 
   const subject = `📩 New Contact Form Submission from ${firstName} ${lastName}`;
 

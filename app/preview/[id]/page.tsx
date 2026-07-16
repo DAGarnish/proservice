@@ -66,7 +66,10 @@ export default function PreviewPage() {
   const [savedSites, setSavedSites] = useState<Array<{ previewId: string; business_name: string; occupation: string; savedAt: string }>>([]);
   const [isVerified, setIsVerified] = useState(false);
   const [isPublishing, setIsPublishing] = useState(false);
+  const [showFallback, setShowFallback] = useState(false);
+  const [isAutoRetrying, setIsAutoRetrying] = useState(false);
   const iframeRef = useRef<HTMLIFrameElement>(null);
+  const autoRetryRef = useRef(false);
 
   useEffect(() => {
     try {
@@ -241,6 +244,60 @@ export default function PreviewPage() {
 
     fetchPreview();
   }, [previewId]);
+
+  // Automatic retry trigger and polling when AI HTML is missing (not built yet or initial attempt failed)
+  useEffect(() => {
+    if (!loading && data && (!data.generatedHtml || !data.generatedHtml.trim().startsWith('<')) && !showFallback && !autoRetryRef.current) {
+      autoRetryRef.current = true;
+      setIsAutoRetrying(true);
+      console.log('AI HTML missing or not built yet. Automatically triggering AI regeneration & recovery...');
+
+      const triggerAutoRecovery = async () => {
+        try {
+          // Trigger server-side generation
+          const res = await fetch(`/api/regenerate-preview/${previewId}`, { method: 'POST' });
+          const result = await res.json();
+          if (res.ok && result.success && result.generatedHtml && result.generatedHtml.trim().startsWith('<')) {
+            setData(prev => prev ? { ...prev, generatedHtml: result.generatedHtml } : null);
+            toast.success('✨ Custom AI website successfully generated!');
+            setIsAutoRetrying(false);
+            return;
+          }
+        } catch (err) {
+          console.error('Initial auto-recovery request failed:', err);
+        }
+
+        // If direct post didn't finish immediately, poll up to 6 times (every 4 seconds)
+        let attempts = 0;
+        const pollInterval = setInterval(async () => {
+          attempts++;
+          try {
+            const checkRes = await fetch(`/api/preview-html/${previewId}`);
+            if (checkRes.ok) {
+              const checkJson: PreviewResponse = await checkRes.json();
+              if (checkJson.generatedHtml && checkJson.generatedHtml.trim().startsWith('<')) {
+                setData(checkJson);
+                toast.success('✨ Custom AI website ready!');
+                clearInterval(pollInterval);
+                setIsAutoRetrying(false);
+                return;
+              }
+            }
+          } catch (e) {
+            console.error('Polling error:', e);
+          }
+
+          if (attempts >= 6) {
+            clearInterval(pollInterval);
+            setIsAutoRetrying(false);
+            autoRetryRef.current = false; // allow manual retry
+          }
+        }, 4000);
+      };
+
+      triggerAutoRecovery();
+    }
+  }, [loading, data, showFallback, previewId]);
 
   // ─── Loading State ────────────────────────────────────────────────────────
 
@@ -425,8 +482,39 @@ export default function PreviewPage() {
                   title={`${brief.business_name} website preview`}
                   sandbox="allow-scripts allow-same-origin allow-forms allow-popups"
                 />
+              ) : !showFallback ? (
+                /* ── AI Generation in Progress / Retrying State (instead of immediate template fallback) ── */
+                <div style={{ padding: '4rem 2rem', textAlign: 'center', background: '#f8fafc', minHeight: '600px', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', color: '#1e293b' }}>
+                  <div style={{ width: 64, height: 64, borderRadius: '50%', background: '#eff6ff', display: 'flex', alignItems: 'center', justifyContent: 'center', marginBottom: '1.5rem', boxShadow: '0 4px 20px rgba(59, 130, 246, 0.15)' }}>
+                    <Loader2 size={36} className={styles.spinnerIcon} style={{ color: '#3b82f6' }} />
+                  </div>
+                  <h3 style={{ fontSize: '1.5rem', fontWeight: 700, margin: '0 0 0.75rem' }}>
+                    ⚡ AI is Building Your Custom Website...
+                  </h3>
+                  <p style={{ maxWidth: 480, margin: '0 0 1.75rem', color: '#64748b', lineHeight: 1.6 }}>
+                    {isAutoRetrying
+                      ? 'Our AI engine is currently writing localized copy and building high-converting card layouts. We are automatically polling and retrying your design right now!'
+                      : 'If your site was interrupted by a temporary AI network rate limit, we will retry generating your custom HTML structure automatically.'}
+                  </p>
+                  <div style={{ display: 'flex', gap: '1rem', flexWrap: 'wrap', justifyContent: 'center' }}>
+                    <button
+                      className="btn btn-primary"
+                      onClick={handleRegenerate}
+                      disabled={isRegenerating || isAutoRetrying}
+                    >
+                      <RefreshCw size={16} style={{ marginRight: 8 }} />
+                      {isRegenerating || isAutoRetrying ? 'Retrying & Building Now...' : 'Retry AI Generation Now'}
+                    </button>
+                    <button
+                      className="btn btn-outline"
+                      onClick={() => setShowFallback(true)}
+                    >
+                      Show Temporary Mockup Design
+                    </button>
+                  </div>
+                </div>
               ) : (
-                /* ── Fallback mock mockup (used if Gemini failed) ── */
+                /* ── Fallback mock mockup (shown only if user explicitly clicks to view temporary mockup) ── */
                 <FallbackMockup brief={brief} palette={palette} />
               )}
             </div>

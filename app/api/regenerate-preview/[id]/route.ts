@@ -8,6 +8,7 @@ import { generateMockPreview } from '@/lib/mockPreviewGenerator';
 import { generateWebsiteWithGemini } from '@/lib/geminiGenerator';
 import { FormData } from '@/types/form';
 import { enhanceGeneratedHtml } from '@/lib/htmlSafeguard';
+import { sendWelcomePreviewEmail } from '@/lib/email';
 
 export async function POST(
   _req: NextRequest,
@@ -69,6 +70,24 @@ export async function POST(
         generatedHtml,
       },
     }));
+
+    // If this is a successful generation (e.g. recovering from a previous failure/deferral during email verification), dispatch welcome email if applicable
+    if (generatedHtml && generatedHtml.trim().startsWith('<') && submission.userId) {
+      try {
+        const user = await withPrismaRetry(() => prisma.user.findUnique({ where: { id: submission.userId! } }));
+        if (user && user.email) {
+          await sendWelcomePreviewEmail(
+            user.email,
+            user.name || '',
+            submission.business_name || user.businessName || 'Your Business',
+            id
+          );
+          console.log(`[PROSERVICE] Sent welcome preview email from regeneration route to ${user.email}`);
+        }
+      } catch (emailErr) {
+        console.error('[PROSERVICE] Could not send welcome email from regeneration route:', emailErr);
+      }
+    }
 
     // 5. Apply viewport and responsive header safeguard to returned HTML
     let html = generatedHtml || '';

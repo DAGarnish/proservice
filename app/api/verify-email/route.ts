@@ -58,9 +58,10 @@ export async function GET(req: NextRequest) {
       );
     }
 
-    // RUN GENERATION AND EMAIL SENDING IN THE BACKGROUND
+    // RUN GENERATION AND EMAIL SENDING IN THE BACKGROUND (Vercel Serverless native after() hook)
     after(async () => {
-      // GENERATE WEBSITE UPON VERIFICATION
+      let isGenerationSuccess = false;
+
       if (sub && (!sub.generatedHtml || sub.generatedHtml.trim() === '')) {
          try {
            let finalLogoUrl = sub.logo_data_url;
@@ -97,9 +98,26 @@ export async function GET(req: NextRequest) {
            }
 
            const { naturalLanguage } = buildWebsiteBrief(sub);
-           let generatedHtml = await generateWebsiteWithGemini(naturalLanguage);
-           
-           if (generatedHtml) {
+           let generatedHtml = '';
+
+           // Retry loop: up to 3 attempts with backoff if Gemini API rate limits or temporarily fails
+           for (let attempt = 1; attempt <= 3; attempt++) {
+             try {
+               console.log(`[PROSERVICE] AI Website generation attempt ${attempt} for ${sub.business_name || targetPreviewId}...`);
+               generatedHtml = await generateWebsiteWithGemini(naturalLanguage);
+               if (generatedHtml && generatedHtml.trim().startsWith('<')) {
+                 isGenerationSuccess = true;
+                 break; // Success! Exit retry loop
+               }
+             } catch (attemptErr: any) {
+               console.warn(`[PROSERVICE] Attempt ${attempt} failed: ${attemptErr?.message || attemptErr}`);
+               if (attempt < 3) {
+                 await new Promise(r => setTimeout(r, 2000 * attempt));
+               }
+             }
+           }
+
+           if (isGenerationSuccess && generatedHtml) {
              generatedHtml = enhanceGeneratedHtml(
                generatedHtml,
                finalLogoUrl,
@@ -114,21 +132,32 @@ export async function GET(req: NextRequest) {
                  data: { generatedHtml },
                })
              );
+             console.log(`[PROSERVICE] Successfully generated and stored AI HTML for ${sub.business_name || targetPreviewId}`);
+           } else {
+             console.warn('[PROSERVICE] All 3 background AI generation attempts failed or timed out during verification. Deferring welcome email until generation succeeds.');
            }
          } catch (genErr) {
-           console.error('[PROSERVICE] AI generation failed during verification:', genErr);
+           console.error('[PROSERVICE] AI generation workflow error during verification:', genErr);
          }
+      } else if (sub && sub.generatedHtml && sub.generatedHtml.trim().startsWith('<')) {
+        isGenerationSuccess = true;
       }
 
-      try {
-        await sendWelcomePreviewEmail(
-          updatedUser.email,
-          updatedUser.name,
-          updatedUser.businessName || updatedUser.name || 'Your Business',
-          targetPreviewId
-        );
-      } catch (emailErr) {
-        console.error('[PROSERVICE] Failed to send welcome preview email:', emailErr);
+      // ONLY send welcome preview email if the website successfully generated/built!
+      if (isGenerationSuccess) {
+        try {
+          await sendWelcomePreviewEmail(
+            updatedUser.email,
+            updatedUser.name,
+            updatedUser.businessName || updatedUser.name || 'Your Business',
+            targetPreviewId
+          );
+          console.log(`[PROSERVICE] Sent welcome preview email to ${updatedUser.email} after successful generation.`);
+        } catch (emailErr) {
+          console.error('[PROSERVICE] Failed to send welcome preview email:', emailErr);
+        }
+      } else {
+        console.log(`[PROSERVICE] Welcome email NOT sent because generation has not succeeded yet. Will be sent when generation succeeds.`);
       }
     });
 

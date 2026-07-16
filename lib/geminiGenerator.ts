@@ -35,26 +35,26 @@ WEBSITE REQUIREMENTS
 - Show trust indicators such as years in business, insured, qualified, emergency service, etc.
 - If uploaded photo URLs are provided, use the FIRST photo URL prominently as the Hero Section background banner or primary featured image.
 
-4. ABOUT SECTION (EXPAND TO ~200 DESCRIPTIVE WORDS)
-- Take the client's form details, background, years in business, and differentiators and EXPAND this section into approximately 200 words of rich, professional, engaging, and descriptive copywriting.
-- Explain the company's roots, commitment to quality, team expertise, and local dedication in polished paragraphs. Do not leave this as a brief stub!
+38. ABOUT SECTION (CONCISE & IMPACTFUL)
+- Present the company's roots, commitment to quality, and local dedication clearly and concisely.
+- Avoid long walls of text or repetitive paragraphs. Small, structured cards or clean bullet points with punchy highlights are far better than long paragraphs.
 - Keep tone aligned to selected style_preference and selected_website_look.
 
-5. SERVICES & PRICING SECTION (EXPAND TO A 200 - 500 WORD SALES PARAGRAPH)
+5. SERVICES & PRICING SECTION (PUNCHY BENEFITS & CARDS)
 - Clearly present main_services and specialities, giving extra prominence to top_services_to_promote.
-- SALES COPY PARAGRAPH (200 - 500 WORDS): From the information on the form regarding services (main_services, specialities, top_services_to_promote), you MUST expand and write a dedicated, highly persuasive sales overview paragraph of *200 to 500 words selling the customer's services* right at the top of the Services section! This paragraph should passionately sell why their services solve customer problems, what makes their workmanship and customer care superior, and what benefits the customer experiences.
-- Follow this persuasive 200-500 word sales introduction with beautifully structured individual service cards or detailed breakdown tiers (~200 words across service items).
-- If price_list exists, render clean, structured pricing tiers, package cards, or a transparent pricing table (do not just list plain text bullet points).
+- Include a concise, compelling introduction (2-3 crisp sentences) selling the value of their workmanship and customer care. Do not write bloated or repetitive walls of text.
+- Follow immediately with beautifully structured individual service cards or detailed breakdown tiers. Small box bullet copy ('<ul>' inside cards) is much better than long text blocks.
+- If price_list exists, render clean, structured pricing tiers, package cards, or a transparent pricing table.
 - Use modern card grids with subtle glassmorphism or hover elevation and clear icons.
 
-6. WHY CHOOSE US / TRUST SECTION (EXPAND TO ~200 DESCRIPTIVE WORDS)
-- Expand upon the client's differentiator, qualifications, insurance, memberships, specialist tools, guarantees, and notable work into approximately 200 words of authoritative, trust-building copy.
+6. WHY CHOOSE US / TRUST SECTION (PUNCHY HIGHLIGHTS)
+- Present the client's differentiator, qualifications, insurance, memberships, specialist tools, guarantees, and notable work in clean, scannable feature boxes or icon-based bullet points.
 - Insurance status (show a prominent "Fully Insured" badge if true).
 - ALIGNMENT: If using a bulleted or checkbox list under a centered heading, use CSS 'margin: 0 auto; width: fit-content;' on the list container so the list block is perfectly centered on the page while keeping the text inside it cleanly left-aligned.
 
 7. SERVICE AREA & INTERACTIVE GOOGLE MAP SECTION — CRITICAL
-- Show the main town/city and full service area list.
-- Explain where the business operates in clear language (~150-200 words explaining regional coverage, emergency availability, and neighborhood commitment).
+- Show the main town/city and full service area list clearly.
+- Include a concise paragraph explaining their regional coverage and quick response availability.
 - CRITICAL MAP RULE: To display a live, interactive Google Map without needing a paid API key, you MUST use the following free embed iframe format:
   <iframe src="https://maps.google.com/maps?q=ENCODED_LOCATION&t=&z=13&ie=UTF8&iwloc=&output=embed" width="100%" height="380" frameborder="0" style="border:0; border-radius: 12px; box-shadow: 0 4px 15px rgba(0,0,0,0.08); width: 100%;" allowfullscreen="" loading="lazy"></iframe>
   Replace ENCODED_LOCATION with the URL-encoded business address, main city, or service area (for example: "New+York,+NY" or "Chicago,+IL" or "London,+UK").
@@ -62,8 +62,11 @@ WEBSITE REQUIREMENTS
 
 8. TESTIMONIALS / SOCIAL PROOF & MULTIPLE PHOTO GALLERY SECTION
 - If testimonials are available, display them in a strong testimonial card section with star ratings.
-- MULTIPLE PHOTO GALLERY: If uploaded photo URLs are provided in the brief, create a dedicated, high-impact "Our Work & Portfolio Gallery" section displaying ALL of those exact image URLs in a modern responsive grid (using CSS 'display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 1.5rem;' with 'border-radius: 12px; overflow: hidden;'). To avoid any crop issue, ensure image cards use 'aspect-ratio: 4/3; width: 100%; position: relative;' with <img style="width: 100%; height: 100%; object-fit: cover; object-position: center;"> or 'object-fit: contain'.
-- If no uploaded photos are provided, use high-resolution Unsplash images relevant to the occupation.
+- MULTIPLE PHOTO GALLERY (NO EMPTY SPACES / BALANCED ROWS): If uploaded photo URLs are provided, create a dedicated "Our Work & Portfolio Gallery" section.
+- CRITICAL GRID & PHOTO FRAMING RULE:
+  1. IDENTICAL BOX SIZES & 100% OCCUPANCY: Every photo container box MUST have identical, uniform dimensions ('aspect-ratio: 4/3; width: 100%; border-radius: 12px; overflow: hidden; position: relative; display: block; background: #f8fafc;'). The image inside ('<img>') MUST occupy 100% of the box space using 'width: 100%; height: 100%; object-fit: cover; object-position: center center; display: block;'. Do not use 'object-fit: contain' which leaves ugly empty space!
+  2. CENTER FOCUS CROPPING: 'object-fit: cover' with 'object-position: center center' (or '50% 50%') crops naturally around the focus point so what is left is the focus point right in the middle with background around the sides, without distortion.
+  3. BALANCED GRID COUNTS (NO EMPTY HOLES): Do NOT leave large empty grid spaces on the page. If your gallery grid has 3 columns ('grid-template-columns: repeat(3, 1fr)' or 'repeat(auto-fit, minmax(300px, 1fr))'), display an exact number of photos that completely fills full rows (for example, exactly 3 or 6 photos). If the user provided 5 photos for a 3-column grid, it is much better to just pick 3 photos so every box is full and no incomplete row or empty gap is left!
 
 9. FAQ (FREQUENTLY ASKED QUESTIONS) SECTION — CRITICAL
 - Include a dedicated FAQ section answering common customer questions for this business type (e.g., "Do you offer emergency or same-day service?", "Are you fully licensed and insured?", "How does pricing and estimating work?", "What areas do you cover?").
@@ -77,9 +80,9 @@ WEBSITE REQUIREMENTS
 11. FLOATING MOBILE ACTION BAR (FOR MOBILE VIEWPORTS)
 - For mobile devices (under 768px), include a fixed bottom contact bar with quick action buttons (e.g., "Call Now" and "Get a Quote" or "WhatsApp") so visitors on smartphones can contact the business immediately from any scroll position.
 
-COPYWRITING & GRAMMAR RULES — CRITICAL CONTENT EXPANSION
-- EXPAND CONTENT FROM BRIEF: The client will submit short form answers or bullet points. Your job as an expert copywriter is to expand each major section (About Us, Services & Pricing, Why Choose Us, Service Area) to around *200 descriptive words per section! For the Services section specifically, you MUST write a **200 - 500 word sales copy paragraph selling the customer's services*. Make the copywriting descriptive, persuasive, engaging, and thorough so the website looks complete and authoritative.
-- Ensure flawless grammar, correct spelling, and native-sounding English throughout the entire site.
+COPYWRITING & GRAMMAR RULES — CONCISE, PUNCHY & TYPO-FREE
+- CONCISE COPY & NO REPETITION: Do not write long, bloated paragraphs of text. Small box bullet copy is far better and higher-converting than long paragraphs of text. Make every section crisp and distinct without repeating the same sentences or claims across pages.
+- TYPO & GRAMMAR CHECK: Carefully check all copy, headings, phone numbers, and business names. Fix all typos, ensure perfect spelling, and maintain flawless, professional English.
 - Ensure perfect punctuation, capitalization, and formatting for all headings, paragraphs, and lists.
 
 DESIGN AND STYLE RULES — CRITICAL AESTHETICS (STUNNING & BEAUTIFUL)
@@ -89,7 +92,7 @@ DESIGN AND STYLE RULES — CRITICAL AESTHETICS (STUNNING & BEAUTIFUL)
 - Include CSS micro-animations (smooth button hover glow and transform lifts, subtle card elevation on hover, and smooth fade transitions) to make the site feel dynamic and alive.
 - Avoid generic, flat, blocky, or outdated "template" looks. The design must feel state-of-the-art, custom-built, and premium.
 - Use selected_website_look and preferred_colours as the main design direction.
-- NO-CROP & IMAGE SIZING RULE: Do NOT distort or crop uploaded images awkwardly. Always use CSS 'object-fit: contain; object-position: center; max-height: 480px; width: auto; max-width: 100%;' (or carefully proportioned containers with 'aspect-ratio: 4/3; overflow: hidden;' and 'object-fit: cover; object-position: center;') so no part of the picture, text, or people's heads are cut off or sliced!
+- IDENTICAL PHOTO FRAMING RULE: Frame all photos so they occupy 100% of the space inside identical-sized boxes ('aspect-ratio: 4/3; overflow: hidden; width: 100%;') using 'width: 100%; height: 100%; object-fit: cover; object-position: center center;'. Never leave large empty space or unbalanced photo grid holes!
 
 SUPPORTED WEBSITE LOOK DIRECTIONS
 1. Professional Blue - trustworthy, professional, established (trades, consultants, repair)
@@ -151,7 +154,7 @@ export async function generateWebsiteWithGemini(naturalLanguageBrief: string): P
         role: 'user',
         parts: [
           {
-            text: `Here is the form data for the business website you need to build:\n\n${naturalLanguageBrief}\n\n=== CRITICAL REMINDERS BEFORE YOU GENERATE ===\n\n1. SERVICES SECTION — WRITE A 200 TO 500 WORD SALES PARAGRAPH: You MUST write a long, rich, persuasive sales overview paragraph (200-500 words) at the top of the Services section. This paragraph should passionately sell the customer's services, explain their processes, highlight their expertise, and convince visitors to hire them. Do NOT just list service names in cards — write a proper sales pitch FIRST, then follow with service cards.\n\n2. ABOUT US — WRITE ~200 WORDS: Expand the About section into a full ~200 word professional company story. Do not write just 1-2 sentences.\n\n3. WHY CHOOSE US — WRITE ~200 WORDS: Expand trust signals, qualifications, insurance, and guarantees into ~200 words of authoritative copy.\n\n4. SERVICE AREA — WRITE ~150-200 WORDS: Explain their local coverage, neighborhood commitment, and emergency availability in rich detail.\n\n5. VISUAL DESIGN: Make the website visually STUNNING with modern gradients, glassmorphism cards, Google Fonts (Inter or Plus Jakarta Sans), smooth hover animations, and premium spacing. Never generate a flat or basic-looking template.\n\n6. PHOTOS: Use ALL uploaded photo URLs across the Hero, Gallery, and service sections. Do NOT crop them — use object-fit: contain or cover with object-position: center.\n\nNow generate the complete HTML website. Return ONLY the raw HTML starting with <!DOCTYPE html>.`,
+            text: `Here is the form data for the business website you need to build:\n\n${naturalLanguageBrief}\n\n=== CRITICAL REMINDERS BEFORE YOU GENERATE ===\n\n1. CONCISE & HIGH-CONVERTING COPY (NO REPETITION): Do not write long, repetitive walls of text or bloated paragraphs. Small box bullet copy ('<ul>' inside styled cards) is far superior to long paragraphs of text. Make every section crisp, scannable, and distinct.\n\n2. SERVICES SECTION — PUNCHY INTRO & CARDS: Write a brief, powerful 2-3 sentence introduction selling their workmanship and customer care, followed immediately by clean, structured service cards with bulleted benefits.\n\n3. WHY CHOOSE US & ABOUT — CLEAN HIGHLIGHTS: Present trust signals, qualifications, insurance, and company roots using punchy highlight cards or icons rather than long essays.\n\n4. PHOTO FRAMING & GRID BALANCING (CRITICAL):\n- IDENTICAL BOX SIZES & 100% OCCUPANCY: Frame all photos so they occupy 100% of the space inside identical-sized boxes ('aspect-ratio: 4/3; width: 100%; border-radius: 12px; overflow: hidden; position: relative; display: block;'). The image inside ('<img>') MUST occupy 100% of the box using 'width: 100%; height: 100%; object-fit: cover; object-position: center center; display: block;'. Do not leave large white gaps or empty space!\n- CENTER FOCUS CROPPING: 'object-fit: cover' with 'object-position: center center' crops naturally around the focus point so the subject stays right in the middle with background evenly distributed around the sides.\n- BALANCED GRID COUNTS (NO EMPTY HOLES): Do not leave large empty grid spaces on the page. If your gallery grid holds 3 items per row, display an exact number of photos that fills full rows cleanly (for example, exactly 3 or 6 photos—if 5 photos are available for a 3-column grid, use 3 photos so no hole is left).\n\n5. VISUAL DESIGN & TYPO CHECK: Make the website visually STUNNING with modern gradients, glassmorphism cards, Google Fonts, and smooth hover animations. Carefully verify every word to fix all typos and ensure flawless English.\n\nNow generate the complete HTML website. Return ONLY the raw HTML starting with <!DOCTYPE html>.`,
           },
         ],
       },
