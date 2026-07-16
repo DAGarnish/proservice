@@ -1158,7 +1158,7 @@ function Step6Conversion({ data, update, errors }: any) {
                  }
                  update('contact_number_to_show', val);
                }} 
-               placeholder="Leave blank to use main number"
+               placeholder="Leave blank to use main number or WhatsApp logo."
             />
             <FieldError error={errors.contact_number_to_show} />
          </div>
@@ -1169,7 +1169,7 @@ function Step6Conversion({ data, update, errors }: any) {
                className="form-input"
                value={data.contact_email_to_show} 
                onChange={e => update('contact_email_to_show', e.target.value)} 
-               placeholder="Leave blank to use main email"
+               placeholder="Leave blank to use a contact form (recommended)"
             />
          </div>
       </div>

@@ -52,8 +52,8 @@ export function buildWebsiteBrief(data: FormData | Partial<FormData>): WebsiteBr
       .filter(Boolean)
       .join('; ') || data.business_address || data.main_city || 'USA',
     seo_keywords: data.seo_keywords || '',
-    contact_number_to_show: data.contact_number_to_show || data.phone_number || '',
-    contact_email_to_show: data.contact_email_to_show || data.email_address || '',
+    contact_number_to_show: data.contact_number_to_show || (data.main_cta === 'whatsapp' ? 'HIDDEN (Use WhatsApp System/Logo)' : data.phone_number) || '',
+    contact_email_to_show: data.contact_email_to_show || 'HIDDEN (Use contact form to prevent spam)',
     contact_form: data.contact_form !== undefined ? Boolean(data.contact_form) : true,
     google_maps: data.google_maps !== undefined ? Boolean(data.google_maps) : true,
     testimonials_on_site: data.testimonials_on_site !== undefined ? Boolean(data.testimonials_on_site) : true,
