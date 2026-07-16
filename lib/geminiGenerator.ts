@@ -42,7 +42,7 @@ WEBSITE REQUIREMENTS
 
 5. SERVICES & PRICING SECTION (EXPAND TO A 200 - 500 WORD SALES PARAGRAPH)
 - Clearly present main_services and specialities, giving extra prominence to top_services_to_promote.
-- SALES COPY PARAGRAPH (200 - 500 WORDS): From the information on the form regarding services (main_services, specialities, top_services_to_promote), you MUST expand and write a dedicated, highly persuasive sales overview paragraph of **200 to 500 words selling the customer's services** right at the top of the Services section! This paragraph should passionately sell why their services solve customer problems, what makes their workmanship and customer care superior, and what benefits the customer experiences.
+- SALES COPY PARAGRAPH (200 - 500 WORDS): From the information on the form regarding services (main_services, specialities, top_services_to_promote), you MUST expand and write a dedicated, highly persuasive sales overview paragraph of *200 to 500 words selling the customer's services* right at the top of the Services section! This paragraph should passionately sell why their services solve customer problems, what makes their workmanship and customer care superior, and what benefits the customer experiences.
 - Follow this persuasive 200-500 word sales introduction with beautifully structured individual service cards or detailed breakdown tiers (~200 words across service items).
 - If price_list exists, render clean, structured pricing tiers, package cards, or a transparent pricing table (do not just list plain text bullet points).
 - Use modern card grids with subtle glassmorphism or hover elevation and clear icons.
@@ -78,7 +78,7 @@ WEBSITE REQUIREMENTS
 - For mobile devices (under 768px), include a fixed bottom contact bar with quick action buttons (e.g., "Call Now" and "Get a Quote" or "WhatsApp") so visitors on smartphones can contact the business immediately from any scroll position.
 
 COPYWRITING & GRAMMAR RULES — CRITICAL CONTENT EXPANSION
-- EXPAND CONTENT FROM BRIEF: The client will submit short form answers or bullet points. Your job as an expert copywriter is to expand each major section (About Us, Services & Pricing, Why Choose Us, Service Area) to around **200 descriptive words per section**! For the Services section specifically, you MUST write a **200 - 500 word sales copy paragraph selling the customer's services**. Make the copywriting descriptive, persuasive, engaging, and thorough so the website looks complete and authoritative.
+- EXPAND CONTENT FROM BRIEF: The client will submit short form answers or bullet points. Your job as an expert copywriter is to expand each major section (About Us, Services & Pricing, Why Choose Us, Service Area) to around *200 descriptive words per section! For the Services section specifically, you MUST write a **200 - 500 word sales copy paragraph selling the customer's services*. Make the copywriting descriptive, persuasive, engaging, and thorough so the website looks complete and authoritative.
 - Ensure flawless grammar, correct spelling, and native-sounding English throughout the entire site.
 - Ensure perfect punctuation, capitalization, and formatting for all headings, paragraphs, and lists.
 
