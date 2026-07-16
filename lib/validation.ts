@@ -28,8 +28,6 @@ export function validateStep1(data: any): StepErrors {
   }
   if (!String(data.phone_number || '').trim()) {
     errors.phone_number = 'Phone number is required';
-  } else if (!isValidPhone(String(data.phone_number))) {
-    errors.phone_number = 'Please enter a valid phone number';
   }
   if (!String(data.email_address || '').trim()) {
     errors.email_address = 'Email address is required';

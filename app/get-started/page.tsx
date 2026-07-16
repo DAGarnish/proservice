@@ -247,7 +247,14 @@ function Step1BusinessBasics({ data, update, errors }: any) {
                type="tel" 
                className={`form-input ${errors.phone_number ? 'error' : ''}`}
                value={data.phone_number} 
-               onChange={e => update('phone_number', e.target.value)} 
+               onChange={e => {
+                 let val = e.target.value;
+                 const digits = val.replace(/\D/g, '');
+                 if (digits.length === 10 && !val.startsWith('+')) {
+                   val = `(${digits.slice(0, 3)}) ${digits.slice(3, 6)} ${digits.slice(6, 10)}`;
+                 }
+                 update('phone_number', val);
+               }} 
                placeholder="e.g. (555) 123-4567"
             />
             <FieldError error={errors.phone_number} />
@@ -1143,7 +1150,14 @@ function Step6Conversion({ data, update, errors }: any) {
                type="text" 
                className={`form-input ${errors.contact_number_to_show ? 'error' : ''}`}
                value={data.contact_number_to_show} 
-               onChange={e => update('contact_number_to_show', e.target.value)} 
+               onChange={e => {
+                 let val = e.target.value;
+                 const digits = val.replace(/\D/g, '');
+                 if (digits.length === 10 && !val.startsWith('+')) {
+                   val = `(${digits.slice(0, 3)}) ${digits.slice(3, 6)} ${digits.slice(6, 10)}`;
+                 }
+                 update('contact_number_to_show', val);
+               }} 
                placeholder="Leave blank to use main number"
             />
             <FieldError error={errors.contact_number_to_show} />
