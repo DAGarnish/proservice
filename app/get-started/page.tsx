@@ -392,7 +392,7 @@ function Step2Services({ data, update, errors }: any) {
             <option value="call">Call Me</option>
             <option value="quote">Request a Quote</option>
             <option value="book">Book Online</option>
-            <option value="whatsapp">Message on WhatsApp</option>
+            <option value="whatsapp">Message on WhatsApp (hides number from spam bots)</option>
             <option value="email">Email Me</option>
          </select>
          <FieldError error={errors.main_cta} />

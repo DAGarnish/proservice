@@ -92,7 +92,12 @@ function generateNaturalLanguageBrief(s: StructuredBrief): string {
   if (s.price_list) lines.push(`Pricing: ${s.price_list}`);
   if (s.top_services_to_promote) lines.push(`Priority services to promote: ${s.top_services_to_promote}`);
   lines.push(`Emergency/same-day service: ${s.emergency_service ? 'Yes — prominently feature this' : 'No'}`);
-  lines.push(`Primary call to action: ${s.main_cta}\n`);
+  if (s.main_cta === 'whatsapp') {
+    lines.push(`Primary call to action: Message on WhatsApp`);
+    lines.push(`CRITICAL UI REQUIREMENT: The CTA button/link MUST use a WhatsApp icon. Do NOT display the raw phone number anywhere on the page to prevent spam bots from scraping it. Only use the phone number in the actual wa.me link behind the CTA.\n`);
+  } else {
+    lines.push(`Primary call to action: ${s.main_cta}\n`);
+  }
 
   lines.push(`TRUST & CREDIBILITY`);
   if (s.differentiator) lines.push(`What makes them different: ${s.differentiator}`);
