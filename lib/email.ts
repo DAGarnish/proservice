@@ -2,13 +2,15 @@ import nodemailer from 'nodemailer';
 import { FormData } from '@/types/form';
 
 function getAppUrl(): string {
+  const rawUrl = process.env.NEXT_PUBLIC_APP_URL || process.env.CLIENT_URL || 'https://www.webpro50.com';
+  const firstUrl = rawUrl.split(',')[0].trim();
   if (process.env.NODE_ENV === 'production' || process.env.VERCEL_ENV === 'production') {
-    if (process.env.NEXT_PUBLIC_APP_URL && process.env.NEXT_PUBLIC_APP_URL !== 'http://localhost:3000') {
-      return process.env.NEXT_PUBLIC_APP_URL.replace(/\/$/, '');
+    if (firstUrl && firstUrl !== 'http://localhost:3000') {
+      return firstUrl.replace(/\/$/, '');
     }
-    return 'https://webpro50.com';
+    return 'https://www.webpro50.com';
   }
-  return (process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000').replace(/\/$/, '');
+  return firstUrl.replace(/\/$/, '');
 }
 
 // Helper to get email credentials supporting EMAIL_ADMIN / EMAIL_PASSWORD or legacy GMAIL_USER / GMAIL_APP_PASSWORD
