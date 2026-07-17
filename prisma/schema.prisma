@@ -108,6 +108,12 @@ model WebsiteSubmission {
   generatedHtml          String?  @default("")
   // Live Dynamic Route Slug
   slug                   String?  @unique
+
+  // Queue & Generation Status Tracking
+  status                 String   @default("pending") // 'pending' | 'processing' | 'completed' | 'failed'
+  generationAttempts     Int      @default(0)
+  lastAttemptAt          DateTime?
+  errorMessage           String?  @default("")
 }
 
 model ContactSubmission {
