@@ -166,7 +166,7 @@ export default function GetStartedPage() {
             <div>
               <h3 style={{ fontSize: '1.6rem', fontWeight: 800, marginBottom: '8px', color: '#fff' }}>Ready to Launch Your Website?</h3>
               <p style={{ color: '#94a3b8', fontSize: '1.05rem', maxWidth: '540px', margin: '0 auto' }}>
-                Click below to let WEBPRO50 AI make the first draft of your website, before we schedule a call with Dave to make the refinements.
+                Click below to let WEBPRO50 AI make the first draft of your website, to give you just an idea of what it will look like, before we schedule a call with Dave to tidy it up make the refinements manually.
               </p>
             </div>
             <button
@@ -340,7 +340,7 @@ function Step2Services({ data, update, errors }: any) {
             className={`form-textarea ${errors.main_services ? 'error' : ''}`}
             value={data.main_services} 
             onChange={e => update('main_services', e.target.value)} 
-            placeholder="e.g. Pipe repair, water heater installation, drain cleaning..."
+            placeholder="e.g. Rewiring, wedding photography, music production..."
          />
          <FieldError error={errors.main_services} />
       </div>
@@ -357,13 +357,13 @@ function Step2Services({ data, update, errors }: any) {
       </div>
 
       <div className="form-group">
-         <label className="form-label">Specialities (Optional)</label>
+         <label className="form-label">Specialities/special equipment (Optional)</label>
          <input 
             type="text" 
             className="form-input"
             value={data.specialities} 
             onChange={e => update('specialities', e.target.value)} 
-            placeholder="e.g. Eco-friendly solutions, commercial properties"
+            placeholder="e.g. Eco-friendly solutions, pro rotary laser..."
          />
       </div>
       
@@ -392,11 +392,23 @@ function Step2Services({ data, update, errors }: any) {
             <option value="call">Call Me</option>
             <option value="quote">Request a Quote</option>
             <option value="book">Book Online</option>
-            <option value="whatsapp">Message on WhatsApp (hides number from spam bots)</option>
+            <option value="whatsapp">Message on WhatsApp (hides number)</option>
             <option value="email">Email Me</option>
          </select>
          <FieldError error={errors.main_cta} />
       </div>
+
+      <div className="form-group" style={{ marginTop: 'var(--space-4)' }}>
+         <label className="form-label">Describe Your Business</label>
+         <textarea 
+            className="form-textarea"
+            value={data.business_description} 
+            onChange={e => update('business_description', e.target.value)} 
+            placeholder="Write as much as you can here to give us plenty to chew on. Is there anything you don't do? Is there anything unusual you do do? Don't worry about writing perfect sentences. We'll fix all that!"
+            style={{ minHeight: '120px' }}
+         />
+      </div>
+
     </div>
   );
 }
@@ -1243,7 +1255,7 @@ function Step7AddOns({ data, update, errors }: any) {
                <strong style={{ display: 'block', marginBottom: '4px' }}>Google Business Setup</strong>
                We'll set up and optimize your Google Business profile so you show up on Google Maps.
                <br/><span style={{ color: 'var(--color-primary)', fontWeight: 600, fontSize: '0.85em', display: 'block', marginTop: '4px' }}>$50 one-time fee</span>
-            </span>
+             </span>
          </label>
       </div>
 

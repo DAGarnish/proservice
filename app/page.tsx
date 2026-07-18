@@ -387,7 +387,7 @@ function FAQSection() {
       q: 'Do I need Deluxe Refinement?',
       a: (
         <>
-          Probably not — see <a href="https://www.penedeswinetours.com/" target="_blank" rel="noopener noreferrer" style={{ textDecoration: 'underline' }}>this</a> example of no deluxe refinement and <a href="https://www.garnishrealestate.com/" target="_blank" rel="noopener noreferrer" style={{ textDecoration: 'underline' }}>this</a> one with it added. The additions are the fancy Fee Transparency Calculator and the three guides just above that. It was all done in one hour ($50)
+          Probably not — see <a href="https://www.penedeswinetours.com/" target="_blank" rel="noopener noreferrer" style={{ textDecoration: 'underline' }}>this</a> example of no deluxe refinement and <a href="https://www.garnishrealestate.com/" target="_blank" rel="noopener noreferrer" style={{ textDecoration: 'underline' }}>this</a> one with it added. The additions are the fancy Fee Transparency Calculator and the three guides just above that. It was all done in one hour ($50). Maybe one day in the future if you really get into your website :)
         </>
       ),
     },

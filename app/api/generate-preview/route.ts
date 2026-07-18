@@ -122,6 +122,7 @@ export async function POST(req: NextRequest): Promise<NextResponse<GenerationRes
       occupation: body.occupation || '',
       years_in_business: body.years_in_business || '',
       main_services: body.main_services || '',
+      business_description: body.business_description || '',
       specialities: body.specialities || '',
       price_list: body.price_list || '',
       top_services_to_promote: body.top_services_to_promote || '',
