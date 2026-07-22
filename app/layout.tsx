@@ -20,7 +20,7 @@ export const metadata: Metadata = {
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
     <html lang="en">
-      <head>
+      <body>
         <Script
           src="https://www.googletagmanager.com/gtag/js?id=G-5X0ZPG308C"
           strategy="afterInteractive"
@@ -34,8 +34,6 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
             gtag('config', 'G-5X0ZPG308C');
           `}
         </Script>
-      </head>
-      <body>
         <SiteHeader />
         <main>{children}</main>
         <SiteFooter />
