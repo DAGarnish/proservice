@@ -10,6 +10,9 @@ export default function AdminPage() {
   const [config, setConfig] = useState<any>(null);
   const [loading, setLoading] = useState(true);
 
+
+  
+
   useEffect(() => {
     // In a real app, you would pass an admin token here if required.
     Promise.all([
