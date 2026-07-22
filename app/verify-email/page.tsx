@@ -35,7 +35,7 @@ function VerifyEmailContent() {
 
     const verifyToken = async () => {
       try {
-        const res = await fetch(`/api/verify-email?token=${encodeURIComponent(token)}${previewId ? `&previewId=${encodeURIComponent(previewId)}` : ''}`);
+        const res = await fetch(`/api/verify-email?token=${encodeURIComponent(token)}${previewId ? `&previewId=${encodeURIComponent(previewId)}` : ''}${emailParam ? `&email=${encodeURIComponent(emailParam)}` : ''}`);
         const data = await res.json();
 
         if (!res.ok || !data.success) {

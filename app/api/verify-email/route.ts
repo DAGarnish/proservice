@@ -34,25 +34,43 @@ export async function GET(req: NextRequest) {
   }
 
   try {
-    const user: any = await withPrismaRetry(() =>
+    const email = searchParams.get('email');
+
+    let user: any = await withPrismaRetry(() =>
       (prisma as any).user.findFirst({
         where: { verificationToken: token },
       })
     );
 
+    let alreadyVerified = false;
+    if (!user && email) {
+      const existingUser: any = await withPrismaRetry(() =>
+        (prisma as any).user.findFirst({
+          where: { email: email.toLowerCase().trim() },
+        })
+      );
+      if (existingUser && existingUser.isEmailVerified) {
+        user = existingUser;
+        alreadyVerified = true;
+      }
+    }
+
     if (!user) {
       return NextResponse.json({ success: false, error: 'Invalid or expired verification token' }, { status: 404 });
     }
 
-    const updatedUser: any = await withPrismaRetry(() =>
-      (prisma as any).user.update({
-        where: { id: user.id },
-        data: {
-          isEmailVerified: true,
-          verificationToken: null, // clear token once verified
-        },
-      })
-    );
+    let updatedUser = user;
+    if (!alreadyVerified) {
+      updatedUser = await withPrismaRetry(() =>
+        (prisma as any).user.update({
+          where: { id: user.id },
+          data: {
+            isEmailVerified: true,
+            verificationToken: null, // clear token once verified
+          },
+        })
+      );
+    }
 
     let targetPreviewId = previewId;
     let sub: any = null;
