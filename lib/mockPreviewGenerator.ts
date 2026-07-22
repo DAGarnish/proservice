@@ -85,7 +85,7 @@ export function generateMockPreview(brief: StructuredBrief): PreviewPayload {
     previewId: generateId(),
     brief: {
       ...brief,
-      // Inject resolved palette so the preview can use colours
+      // Inject resolved palette so the preview can use colors
       preferred_colours: brief.preferred_colours || palette.primary,
     },
     generatedAt: new Date().toISOString(),

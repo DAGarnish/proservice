@@ -386,7 +386,7 @@ export async function sendUserVerificationEmail(
                 WEB<span style="color: #1a56db;">PRO50</span>
               </div>
               <div style="color: #bfdbfe; font-size: 14px; font-weight: 600; margin-top: 6px; text-transform: uppercase; letter-spacing: 1.5px;">
-                Account Verification &amp; Website Ready
+                Account Verification
               </div>
             </td>
           </tr>
@@ -398,7 +398,7 @@ export async function sendUserVerificationEmail(
                 Welcome, ${data.contact_name || 'Valued Client'}! 🎉
               </h1>
               <p style="margin: 0 0 20px 0; font-size: 16px; line-height: 1.6; color: #4b5563;">
-                We have generated your custom AI website for <strong style="color: #1a56db;">${data.business_name}</strong>! Before you can connect custom domains or launch live to the public, please verify your email address below.
+                We have generated your first draft, using AI for <strong style="color: #1a56db;">${data.business_name}</strong>! Before you can connect custom domains or launch live to the public, please verify your email address below.
               </p>
               
               <!-- Primary Verify CTA Button -->
@@ -415,7 +415,7 @@ export async function sendUserVerificationEmail(
 
               <div style="background-color: #f8fafc; border-left: 4px solid #1a56db; padding: 16px; border-radius: 0 8px 8px 0; margin-bottom: 24px;">
                 <p style="margin: 0; font-size: 14px; color: #374151; line-height: 1.5;">
-                  <strong>Why verify?</strong> Verifying your email confirms ownership of your account and enables secure management functions like custom domain binding, SEO optimization, and live publishing.
+                  <strong>Why verify?</strong> Verifying your email confirms ownership of your account, which tells us you're real and stops bots from taking up our time and energy.
                 </p>
               </div>
             </td>
@@ -425,7 +425,7 @@ export async function sendUserVerificationEmail(
           <tr>
             <td style="background-color: #1f2937; padding: 24px 40px; text-align: center; color: #9ca3af; font-size: 13px; line-height: 1.6;">
               <div style="color: #ffffff; font-weight: 700; font-size: 15px; margin-bottom: 6px;">
-                WEBPRO50 AI Studio
+                WEBPRO50 Studio
               </div>
               <div>
                 You received this verification email because you submitted an intake form for <strong>${data.business_name}</strong>.
@@ -473,7 +473,7 @@ export async function sendWelcomePreviewEmail(
   const appUrl = getAppUrl();
   const previewUrl = previewId ? `${appUrl}/preview/${previewId}` : appUrl;
 
-  const subject = `🎉 Email Verified! View Your AI Website Preview — ${businessName}`;
+  const subject = `🎉 Email Verified! View Your Website First Draft — ${businessName}`;
 
   const htmlContent = `
 <!DOCTYPE html>
@@ -509,7 +509,7 @@ export async function sendWelcomePreviewEmail(
                 Congratulations, ${userName || 'Valued Partner'}! 🎉
               </h1>
               <p style="margin: 0 0 20px 0; font-size: 16px; line-height: 1.6; color: #4b5563;">
-                Your email address <strong style="color: #10b981;">${userEmail}</strong> has been successfully verified! Your custom AI website for <strong style="color: #1a56db;">${businessName}</strong> is ready for your review and customization right now.
+                Your email address <strong style="color: #10b981;">${userEmail}</strong> has been successfully verified! Your custom website first draft for <strong style="color: #1a56db;">${businessName}</strong> is ready for your review and customization right now. REMEMBER, some things may look out of place or a bit weird. This is why our hybrid system is best—us humans take over from here to iron these things out if you move forward with us.
               </p>
               
               <!-- Primary Preview CTA Button -->
@@ -517,17 +517,17 @@ export async function sendWelcomePreviewEmail(
                 <tr>
                   <td align="center">
                     <a href="${previewUrl}" target="_blank" style="display: inline-block; padding: 18px 40px; font-size: 17px; font-weight: 700; color: #ffffff; background-color: #1a56db; text-decoration: none; border-radius: 12px; box-shadow: 0 8px 16px rgba(26, 86, 219, 0.35);">
-                      👀 View Your Website Preview Directly &rarr;
+                      👀 View Your Website First Draft Here &rarr;
                     </a>
                   </td>
                 </tr>
               </table>
 
               <div style="background-color: #f8fafc; border: 1px solid #e2e8f0; padding: 20px; border-radius: 12px; margin-bottom: 24px;">
-                <h3 style="margin: 0 0 8px 0; font-size: 16px; color: #1e293b;">Unlocked Capabilities:</h3>
+                <h3 style="margin: 0 0 8px 0; font-size: 16px; color: #1e293b;">Next Steps:</h3>
                 <ul style="margin: 0; padding-left: 20px; color: #4b5563; font-size: 14px; line-height: 1.6;">
-                  <li><strong>Live Site Review:</strong> Inspect every page, service card, and interactive element.</li>
-                  <li><strong>AI Customization:</strong> Adjust colors, fonts, or update text seamlessly.</li>
+                  <li><strong>Site Review:</strong> Inspect and make notes</li>
+                  <li><strong>Customization:</strong> Adjust colors, fonts, or update text.</li>
                   <li><strong>Custom Domain &amp; Publishing:</strong> Connect your domain name and publish to the world.</li>
                 </ul>
               </div>
@@ -538,7 +538,7 @@ export async function sendWelcomePreviewEmail(
           <tr>
             <td style="background-color: #1f2937; padding: 24px 40px; text-align: center; color: #9ca3af; font-size: 13px; line-height: 1.6;">
               <div style="color: #ffffff; font-weight: 700; font-size: 15px; margin-bottom: 6px;">
-                WEBPRO50 AI Studio
+                WEBPRO50 Studio
               </div>
               <div>
                 You received this email because you verified your account for <strong>${businessName}</strong>.
@@ -558,7 +558,7 @@ export async function sendWelcomePreviewEmail(
   `;
 
   const mailOptions = {
-    from: `"WEBPRO50 AI Studio" <${gmailUser}>`,
+    from: `"WEBPRO50 Studio" <${gmailUser}>`,
     to: userEmail,
     subject,
     html: htmlContent,

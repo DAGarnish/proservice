@@ -103,7 +103,7 @@ function generateNaturalLanguageBrief(s: StructuredBrief): string {
 
   lines.push(`TRUST & CREDIBILITY`);
   if (s.differentiator) lines.push(`What makes them different: ${s.differentiator}`);
-  if (s.qualifications) lines.push(`Qualifications / licences: ${s.qualifications}`);
+  if (s.qualifications) lines.push(`Qualifications / licenses: ${s.qualifications}`);
   lines.push(`Insured: ${s.insurance ? 'Yes — display insurance badge' : 'Not confirmed'}`);
   if (s.memberships) lines.push(`Memberships / trade bodies: ${s.memberships}`);
   if (s.specialist_tools) lines.push(`Specialist equipment: ${s.specialist_tools}`);
@@ -114,7 +114,7 @@ function generateNaturalLanguageBrief(s: StructuredBrief): string {
   lines.push(`DESIGN & STYLE`);
   lines.push(`Website look: ${LOOK_LABELS[s.selected_website_look] || s.selected_website_look}`);
   if (Array.isArray(s.style_preference) && s.style_preference.length > 0) lines.push(`Style keywords: ${s.style_preference.join(', ')}`);
-  if (s.preferred_colours) lines.push(`Preferred colours: ${s.preferred_colours}`);
+  if (s.preferred_colours) lines.push(`Preferred colors: ${s.preferred_colours}`);
   lines.push(`Has logo: ${s.has_logo ? 'Yes' : 'No — generate professional placeholder'}`);
   if (s.logo_data_url) lines.push(`Logo Data URL: ${s.logo_data_url}\nINSTRUCTION: The user provided their logo image as a base64 Data URL. You MUST include an <img src="${s.logo_data_url}" alt="${s.business_name} Logo" class="logo" style="max-height: 48px; width: auto; object-fit: contain;"> tag inside the header navbar and footer of the generated HTML website!`);
   lines.push(`Has photos: ${s.has_photos ? 'Yes' : 'No — use professional stock images relevant to ' + s.occupation}`);

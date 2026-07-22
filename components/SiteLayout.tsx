@@ -120,9 +120,6 @@ export function SiteFooter() {
               <Link href="/get-started" style={{ color: 'var(--color-gray-400)', fontSize: 'var(--text-sm)', textDecoration: 'none' }}>
                 Build My Website
               </Link>
-              <Link href="/admin" style={{ color: 'var(--color-gray-400)', fontSize: 'var(--text-sm)', textDecoration: 'none' }}>
-                Admin
-              </Link>
             </div>
           </div>
 
