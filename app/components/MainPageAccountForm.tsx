@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { toast } from 'react-toastify';
 
 export default function MainPageAccountForm() {
@@ -13,6 +13,32 @@ export default function MainPageAccountForm() {
   });
 
   const [loading, setLoading] = useState(false);
+
+  // Prefill fields when arriving from the website preview page
+  // (e.g. /?message=...&first_name=...&last_name=...&email_address=...&phone_number=...#verify-email-form),
+  // without requiring a Suspense boundary since we read window.location directly instead of useSearchParams.
+  useEffect(() => {
+    try {
+      const params = new URLSearchParams(window.location.search);
+      const prefill: Partial<typeof formData> = {};
+      const message = params.get('message');
+      const firstName = params.get('first_name');
+      const lastName = params.get('last_name');
+      const emailAddress = params.get('email_address');
+      const phoneNumber = params.get('phone_number');
+      if (message) prefill.message = message;
+      if (firstName) prefill.first_name = firstName;
+      if (lastName) prefill.last_name = lastName;
+      if (emailAddress) prefill.email_address = emailAddress;
+      if (phoneNumber) prefill.phone_number = phoneNumber;
+
+      if (Object.keys(prefill).length > 0) {
+        setFormData(prev => ({ ...prev, ...prefill }));
+      }
+    } catch (e) {
+      console.error('Failed to read prefill data from URL:', e);
+    }
+  }, []);
 
   const updateField = (field: string, value: string) => {
     setFormData(prev => ({ ...prev, [field]: value }));

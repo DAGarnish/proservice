@@ -7,13 +7,11 @@ import { NextRequest, NextResponse } from 'next/server';
 import { buildWebsiteBrief } from '@/lib/promptBuilder';
 import { checkRateLimit, recordRequest } from '@/lib/rateLimiter';
 import { logRequest } from '@/lib/requestLogger';
-import { generateMockPreview } from '@/lib/mockPreviewGenerator';
-import { generateWebsiteWithGemini } from '@/lib/geminiGenerator';
 import { FormData, GenerationResponse } from '@/types/form';
-import { prisma, withPrismaRetry } from '@/lib/prisma';
-import { sendSubmissionEmail, sendUserVerificationEmail } from '@/lib/email';
-import { enhanceGeneratedHtml } from '@/lib/htmlSafeguard';
-import crypto from 'crypto';
+
+function getBackendUrl(): string {
+  return (process.env.BACKEND_API_URL || 'http://localhost:5000').replace(/\/$/, '');
+}
 
 // Helper: get client IP from request headers
 function getClientIP(req: NextRequest): string {
@@ -68,160 +66,35 @@ export async function POST(req: NextRequest): Promise<NextResponse<GenerationRes
       );
     }
 
-    // 3. Build structured brief
-    const { structured, naturalLanguage } = buildWebsiteBrief(body as FormData);
+    // 3. Build structured brief (used only for logging below)
+    const { structured } = buildWebsiteBrief(body as FormData);
 
-    // 4. Generate a unique ID for the preview (generation deferred until verification)
-    const previewId = crypto.randomUUID();
-    const generatedHtml = ''; // Generated later
+    // 4. Delegate the actual API handling — User + WebsiteSubmission DB writes,
+    // verification token generation, and email dispatch — to the backend.
+    // This is a real server-to-server call, not a browser request, so a failed
+    // or unreachable backend surfaces as a real error instead of a silent no-op.
+    const backendRes = await fetch(`${getBackendUrl()}/api/v1/submissions`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(body),
+    });
 
+    const backendResult = await backendRes.json().catch(() => ({}));
 
-    // 5. Create or Update User account in database (`User` table) & Save submission
-    //
-    // IMPORTANT: If this email already has a pending (unverified) verification token,
-    // reuse it instead of minting a new one. Overwriting the token on every resubmission
-    // silently invalidates any verification email already sent, so a user clicking an
-    // earlier email link would get "Invalid or expired verification token".
-    let verificationToken = crypto.randomUUID();
-    let userId: string | undefined = undefined;
-
-    try {
-      const existingUser: any = await withPrismaRetry(() =>
-        (prisma as any).user.findUnique({ where: { email } })
-      );
-
-      if (existingUser && !existingUser.isEmailVerified && existingUser.verificationToken) {
-        verificationToken = existingUser.verificationToken;
-      }
-
-      const userRecord: any = await withPrismaRetry(() => (prisma as any).user.upsert({
-        where: { email },
-        update: {
-          name: body.contact_name || '',
-          phone: body.phone_number || '',
-          address: body.business_address || '',
-          businessName: body.business_name || '',
-          occupation: body.occupation || '',
-          ...(existingUser?.isEmailVerified
-            ? {}
-            : { verificationToken: verificationToken, verificationSentAt: new Date() }),
-        },
-        create: {
-          name: body.contact_name || '',
-          email: email,
-          phone: body.phone_number || '',
-          address: body.business_address || '',
-          businessName: body.business_name || '',
-          occupation: body.occupation || '',
-          verificationToken: verificationToken,
-          verificationSentAt: new Date(),
-          isEmailVerified: false,
-        }
-      }));
-      if (userRecord) {
-        userId = userRecord.id;
-      }
-    } catch (userDbError: any) {
-      console.error('[PROSERVICE] Could not upsert User record into Postgres:', userDbError.message);
+    if (!backendRes.ok || !backendResult.success) {
+      const message = backendResult.error || `Backend responded with status ${backendRes.status}`;
+      logRequest({
+        ip, email, businessName,
+        occupation: structured.occupation,
+        status: 'error',
+        errorMessage: message,
+        durationMs: Date.now() - startTime,
+      });
+      console.error('[PROSERVICE] Backend rejected submission:', message);
+      return NextResponse.json({ success: false, error: message }, { status: backendRes.status || 502 });
     }
 
-    const submissionData: any = {
-      userId: userId || null,
-      business_name: body.business_name || '',
-      contact_name: body.contact_name || '',
-      phone_number: body.phone_number || '',
-      email_address: body.email_address || '',
-      business_address: body.business_address || '',
-      service_area: body.service_area || '',
-      occupation: body.occupation || '',
-      years_in_business: body.years_in_business || '',
-      main_services: body.main_services || '',
-      business_description: body.business_description || '',
-      specialities: body.specialities || '',
-      price_list: body.price_list || '',
-      top_services_to_promote: body.top_services_to_promote || '',
-      emergency_service: Boolean(body.emergency_service),
-      main_cta: body.main_cta || 'call',
-      differentiator: body.differentiator || '',
-      qualifications: body.qualifications || '',
-      insurance: Boolean(body.insurance),
-      memberships: body.memberships || '',
-      specialist_tools: body.specialist_tools || '',
-      testimonials: body.testimonials || '',
-      notable_work: body.notable_work || '',
-      guarantees: body.guarantees || '',
-      style_preference: Array.isArray(body.style_preference) ? body.style_preference : [],
-      preferred_colours: body.preferred_colours || '',
-      selected_website_look: body.selected_website_look || 'professional-blue',
-      match_logo_colours: Boolean(body.match_logo_colours),
-      logo_uploaded: Boolean(body.logo_uploaded),
-      logo_data_url: body.logo_data_url || '',
-      logo_prompt: body.logo_prompt || '',
-      photos_uploaded: Boolean(body.photos_uploaded || (body.uploaded_photos_urls && body.uploaded_photos_urls.length > 0) || (body.secondary_photos_urls && body.secondary_photos_urls.length > 0)),
-      uploaded_photos_urls: [
-        ...(Array.isArray(body.uploaded_photos_urls) ? body.uploaded_photos_urls : []),
-        ...(Array.isArray(body.secondary_photos_urls) ? body.secondary_photos_urls : [])
-      ].filter((url, index, self) => url && self.indexOf(url) === index),
-      example_websites: body.example_websites || '',
-      avoid_on_site: body.avoid_on_site || '',
-      main_city: body.main_city || '',
-      full_service_area: body.full_service_area || '',
-      priority_locations: body.priority_locations || '',
-      seo_keywords: body.seo_keywords || '',
-      service_pages: body.service_pages !== undefined ? Boolean(body.service_pages) : true,
-      location_pages: body.location_pages !== undefined ? Boolean(body.location_pages) : true,
-      contact_number_to_show: body.contact_number_to_show || '',
-      contact_email_to_show: body.contact_email_to_show || '',
-      contact_form: body.contact_form !== undefined ? Boolean(body.contact_form) : true,
-      google_maps: body.google_maps !== undefined ? Boolean(body.google_maps) : true,
-      testimonials_on_site: body.testimonials_on_site !== undefined ? Boolean(body.testimonials_on_site) : true,
-      quote_request_form: body.quote_request_form !== undefined ? Boolean(body.quote_request_form) : true,
-      booking_or_whatsapp: body.booking_or_whatsapp || 'none',
-      google_listing_option: Boolean(body.google_listing_option),
-      branded_domain_option: Boolean(body.branded_domain_option),
-      additional_notes: body.additional_notes || '',
-      seasonal_offers: body.seasonal_offers || '',
-      competitors: body.competitors || '',
-      avoid_wording: body.avoid_wording || '',
-      previewId,
-      generatedHtml,
-    };
-
-    try {
-      await withPrismaRetry(() => prisma.websiteSubmission.create({
-        data: submissionData,
-      }));
-    } catch (dbError: any) {
-      if (dbError?.message?.includes('uploaded_photos_urls')) {
-        console.warn('[PROSERVICE] Notice: Prisma Client cache is outdated in running server. Retrying creation without uploaded_photos_urls...');
-        delete submissionData.uploaded_photos_urls;
-        try {
-          await withPrismaRetry(() => prisma.websiteSubmission.create({
-            data: submissionData,
-          }));
-        } catch (retryErr: any) {
-          console.error('[PROSERVICE] Could not save to Postgres after retry:', retryErr.message);
-        }
-      } else {
-        console.error('[PROSERVICE] Database save error (Postgres connection/offline):', dbError.message);
-        // Do not throw! Let the user proceed to the live preview!
-      }
-    }
-
-    // 6. Send email notifications via Nodemailer (non-blocking)
-    try {
-      await sendSubmissionEmail(body as FormData, previewId);
-    } catch (emailError) {
-      console.error('[PROSERVICE] Failed to send admin notification email:', emailError);
-    }
-
-    try {
-      await sendUserVerificationEmail(body as FormData, previewId, verificationToken);
-    } catch (userEmailError) {
-      console.error('[PROSERVICE] Failed to send user verification email:', userEmailError);
-    }
-
-    // 7. Record successful request (for rate limiting and logging)
+    // 5. Record successful request (for rate limiting and logging)
     recordRequest(ip, email, businessName);
 
     logRequest({
@@ -230,16 +103,16 @@ export async function POST(req: NextRequest): Promise<NextResponse<GenerationRes
       businessName,
       occupation: structured.occupation,
       status: 'success',
-      previewId,
+      previewId: backendResult.previewId,
       durationMs: Date.now() - startTime,
     });
 
-    // 8. Return the preview payload along with user account & verification token details
+    // 6. Return the preview payload along with user account & verification token details
     return NextResponse.json({
       success: true,
-      previewId,
-      userId,
-      verificationToken,
+      previewId: backendResult.previewId,
+      userId: backendResult.userId,
+      verificationToken: backendResult.verificationToken,
     });
 
   } catch (error) {

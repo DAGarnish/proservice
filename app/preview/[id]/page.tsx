@@ -5,21 +5,26 @@
 'use client';
 
 import { useEffect, useState, useRef } from 'react';
-import { useParams } from 'next/navigation';
+import { useParams, useRouter } from 'next/navigation';
 import {
   CheckCircle2, AlertTriangle, Phone, MapPin, Mail,
-  Clock, Shield, Star, Loader2, RefreshCw, ExternalLink,
-  Monitor, Smartphone, Tablet, Save, Bookmark, Sparkles, X, Trash2
+  Clock, Shield, Star, Loader2, RefreshCw, ArrowRight
 } from 'lucide-react';
 import { toast } from 'react-toastify';
 import { getPreviewPalette, getPreviewServices, getPreviewTestimonials } from '@/lib/mockPreviewGenerator';
 import styles from './preview.module.css';
+
+const MAKE_CHANGES_MESSAGE =
+  "Hi Dave, I love my website first draft, and would like to sign up, make some final changes, and get my bespoke domain!";
 
 // ─── Types ───────────────────────────────────────────────────────────────────
 
 export interface BriefSnippet {
   business_name: string;
   occupation: string;
+  contact_name: string | null;
+  phone_number: string | null;
+  email_address: string | null;
   contact_number_to_show: string | null;
   contact_email_to_show: string | null;
   service_area: string | null;
@@ -49,72 +54,37 @@ interface PreviewResponse {
   brief: BriefSnippet;
 }
 
-type ViewMode = 'desktop' | 'tablet' | 'mobile';
-
 // ─── Main Component ───────────────────────────────────────────────────────────
 
 export default function PreviewPage() {
   const params = useParams();
+  const router = useRouter();
   const previewId = params.id as string;
 
   const [loading, setLoading] = useState(true);
   const [data, setData] = useState<PreviewResponse | null>(null);
   const [error, setError] = useState('');
-  const [viewMode, setViewMode] = useState<ViewMode>('desktop');
   const [isRegenerating, setIsRegenerating] = useState(false);
-  const [showSavedModal, setShowSavedModal] = useState(false);
-  const [savedSites, setSavedSites] = useState<Array<{ previewId: string; business_name: string; occupation: string; savedAt: string }>>([]);
-  const [isVerified, setIsVerified] = useState(false);
-  const [isPublishing, setIsPublishing] = useState(false);
   const [showFallback, setShowFallback] = useState(false);
   const [isAutoRetrying, setIsAutoRetrying] = useState(false);
   const iframeRef = useRef<HTMLIFrameElement>(null);
   const autoRetryRef = useRef(false);
 
-  useEffect(() => {
-    try {
-      const stored = localStorage.getItem('proservice_saved_sites');
-      if (stored) {
-        setSavedSites(JSON.parse(stored));
-      }
-      const verifiedEmail = localStorage.getItem('proservice_verified_email');
-      if (verifiedEmail) {
-        setIsVerified(true);
-      }
-    } catch (e) {
-      console.error('Failed to parse storage:', e);
-    }
-  }, []);
+  const handleMakeChanges = () => {
+    const brief = data?.brief;
+    const fullName = (brief?.contact_name || '').trim();
+    const firstSpace = fullName.indexOf(' ');
+    const firstName = firstSpace === -1 ? fullName : fullName.slice(0, firstSpace);
+    const lastName = firstSpace === -1 ? '' : fullName.slice(firstSpace + 1).trim();
 
-  const handleSaveProject = () => {
-    if (!data) return;
-    try {
-      const newSite = {
-        previewId: previewId,
-        business_name: data.brief.business_name || 'My Business',
-        occupation: data.brief.occupation || 'Service Business',
-        savedAt: new Date().toISOString(),
-      };
-      
-      const stored = localStorage.getItem('proservice_saved_sites');
-      let currentList = stored ? JSON.parse(stored) : [];
-      currentList = currentList.filter((s: any) => s.previewId !== previewId);
-      const updatedList = [newSite, ...currentList];
-      
-      localStorage.setItem('proservice_saved_sites', JSON.stringify(updatedList));
-      setSavedSites(updatedList);
+    const params = new URLSearchParams();
+    params.set('message', MAKE_CHANGES_MESSAGE);
+    if (firstName) params.set('first_name', firstName);
+    if (lastName) params.set('last_name', lastName);
+    if (brief?.email_address) params.set('email_address', brief.email_address);
+    if (brief?.phone_number) params.set('phone_number', brief.phone_number);
 
-      if (navigator.clipboard) {
-        navigator.clipboard.writeText(window.location.href).catch(() => {});
-      }
-
-      toast.success('🎉 Site Saved! Link copied to clipboard. You can regenerate this site in Next.js anytime.', {
-        autoClose: 4000,
-      });
-    } catch (e) {
-      console.error('Failed to save project:', e);
-      toast.error('Could not save project locally.');
-    }
+    router.push(`/?${params.toString()}#verify-email-form`);
   };
 
   const handleRegenerate = async () => {
@@ -154,59 +124,6 @@ export default function PreviewPage() {
       });
     } finally {
       setIsRegenerating(false);
-    }
-  };
-
-  const handleRemoveSavedSite = (idToRemove: string, e: React.MouseEvent) => {
-    e.stopPropagation();
-    try {
-      const updated = savedSites.filter(s => s.previewId !== idToRemove);
-      localStorage.setItem('proservice_saved_sites', JSON.stringify(updated));
-      setSavedSites(updated);
-      toast.info('Removed from saved sites');
-    } catch (err) {
-      console.error(err);
-    }
-  };
-
-  const handlePublishSite = async () => {
-    if (isPublishing) return;
-    setIsPublishing(true);
-    const toastId = toast.loading('Publishing your site online...');
-
-    try {
-      const res = await fetch('/api/publish-site', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ previewId }),
-      });
-      const result = await res.json();
-
-      if (!res.ok || !result.success) {
-        throw new Error(result.error || 'Failed to publish site');
-      }
-
-      toast.update(toastId, {
-        render: '✨ Site published! Redirecting to live site...',
-        type: 'success',
-        isLoading: false,
-        autoClose: 2000,
-      });
-
-      // Redirect to the live dynamic route
-      setTimeout(() => {
-        window.location.href = `/site/${result.slug}`;
-      }, 1000);
-
-    } catch (err: any) {
-      console.error('Publish error:', err);
-      toast.update(toastId, {
-        render: `❌ Error: ${err.message}`,
-        type: 'error',
-        isLoading: false,
-        autoClose: 4000,
-      });
-      setIsPublishing(false);
     }
   };
 
@@ -349,297 +266,68 @@ export default function PreviewPage() {
   const hasAiHtml = generatedHtml && generatedHtml.trim().startsWith('<!');
   const palette = getPreviewPalette(brief.selected_website_look);
 
-  // Iframe widths for each view mode
-  const viewWidths: Record<ViewMode, string> = {
-    desktop: '100%',
-    tablet: '768px',
-    mobile: '390px',
-  };
-
   // ─── Render ───────────────────────────────────────────────────────────────
 
   return (
-    <div className={styles.pageContainer}>
+    <div className={styles.fullBleedContainer}>
 
-      {/* ── Email Verification Status Banner ── */}
-      <div style={{ background: isVerified ? '#14532d' : '#1e3a8a', color: '#ffffff', padding: '10px 20px', fontSize: '13.5px', fontWeight: 600, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '10px', borderBottom: '1px solid rgba(255,255,255,0.15)', flexWrap: 'wrap', textAlign: 'center' }}>
-        {isVerified ? (
-          <>
-            <CheckCircle2 size={16} style={{ color: '#4ade80' }} />
-            <span>🎉 Account &amp; Email Verified! You have full access to connect custom domains, optimize SEO, and deploy this website.</span>
-          </>
+      {/* ── Full-screen website preview ── */}
+      <div className={styles.fullBleedIframeWrap}>
+        {hasAiHtml ? (
+          /* ── AI-generated HTML filling the entire viewport ── */
+          <iframe
+            ref={iframeRef}
+            srcDoc={generatedHtml}
+            className={styles.fullBleedIframe}
+            title={`${brief.business_name} website preview`}
+            sandbox="allow-scripts allow-same-origin allow-forms allow-popups"
+          />
+        ) : !showFallback ? (
+          /* ── AI Generation in Progress / Retrying State (instead of immediate template fallback) ── */
+          <div style={{ padding: '4rem 2rem', textAlign: 'center', background: '#f8fafc', height: '100%', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', color: '#1e293b' }}>
+            <div style={{ width: 64, height: 64, borderRadius: '50%', background: '#eff6ff', display: 'flex', alignItems: 'center', justifyContent: 'center', marginBottom: '1.5rem', boxShadow: '0 4px 20px rgba(59, 130, 246, 0.15)' }}>
+              <Loader2 size={36} className={styles.spinnerIcon} style={{ color: '#3b82f6' }} />
+            </div>
+            <h3 style={{ fontSize: '1.5rem', fontWeight: 700, margin: '0 0 0.75rem' }}>
+              ⚡ AI is Building Your Custom Website...
+            </h3>
+            <p style={{ maxWidth: 480, margin: '0 0 1.75rem', color: '#64748b', lineHeight: 1.6 }}>
+              {isAutoRetrying
+                ? 'Our AI engine is currently writing localized copy and building high-converting card layouts. We are automatically polling and retrying your design right now!'
+                : 'If your site was interrupted by a temporary AI network rate limit, we will retry generating your custom HTML structure automatically.'}
+            </p>
+            <div style={{ display: 'flex', gap: '1rem', flexWrap: 'wrap', justifyContent: 'center' }}>
+              <button
+                className="btn btn-primary"
+                onClick={handleRegenerate}
+                disabled={isRegenerating || isAutoRetrying}
+              >
+                <RefreshCw size={16} style={{ marginRight: 8 }} />
+                {isRegenerating || isAutoRetrying ? 'Retrying & Building Now...' : 'Retry AI Generation Now'}
+              </button>
+              <button
+                className="btn btn-outline"
+                onClick={() => setShowFallback(true)}
+              >
+                Show Temporary Mockup Design
+              </button>
+            </div>
+          </div>
         ) : (
-          <>
-            <Sparkles size={16} style={{ color: '#60a5fa' }} />
-            <span>📧 Verification Email Dispatched: Check your inbox to verify your email address. Verification is required to unlock custom domain registration and publish your live website!</span>
-          </>
+          /* ── Fallback mock mockup (shown only if user explicitly clicks to view temporary mockup) ── */
+          <FallbackMockup brief={brief} palette={palette} />
         )}
       </div>
 
-      {/* ── Top Action Bar ── */}
-      <div className={styles.actionBar}>
-        <div className={styles.actionBarInner}>
-          <div className={styles.actionBarLeft}>
-            <div className={styles.actionBarTitle}>Your Website Preview</div>
-            <div className={styles.actionBarSub}>
-              {hasAiHtml ? '✦ AI-generated from your form' : '✦ Design mockup'}
-            </div>
-          </div>
-
-          {/* View mode toggle */}
-          <div className={styles.viewToggle}>
-            {(['desktop', 'tablet', 'mobile'] as ViewMode[]).map(mode => (
-              <button
-                key={mode}
-                className={`${styles.viewToggleBtn} ${viewMode === mode ? styles.viewToggleBtnActive : ''}`}
-                onClick={() => setViewMode(mode)}
-                title={mode.charAt(0).toUpperCase() + mode.slice(1)}
-              >
-                {mode === 'desktop' && <Monitor size={16} />}
-                {mode === 'tablet' && <Tablet size={16} />}
-                {mode === 'mobile' && <Smartphone size={16} />}
-              </button>
-            ))}
-          </div>
-
-          <div className={styles.actionBarRight}>
-            <button
-              className="btn btn-outline"
-              onClick={() => setShowSavedModal(true)}
-              title="View your saved websites"
-            >
-              <Bookmark size={14} style={{ marginRight: 6 }} />
-              Saved ({savedSites.length})
-            </button>
-            <button
-              className="btn btn-outline"
-              onClick={handleSaveProject}
-              title="Save project for future regeneration in Next.js"
-            >
-              <Save size={14} style={{ marginRight: 6 }} />
-              Save Site
-            </button>
-            <button
-              className="btn btn-primary"
-              onClick={handlePublishSite}
-              disabled={isPublishing}
-            >
-              {isPublishing ? <Loader2 size={14} className={styles.spinnerIcon} style={{ marginRight: 6 }} /> : <CheckCircle2 size={14} style={{ marginRight: 6 }} />}
-              {isPublishing ? 'Publishing...' : 'I Like This — Get Online'}
-            </button>
-          </div>
-        </div>
-      </div>
-
-      {/* ── Main Layout ── */}
-      <div className={styles.mainLayout}>
-
-        {/* ── Preview Frame ── */}
-        <div className={styles.previewFrameWrapper}>
-          {/* Browser chrome */}
-          <div className={styles.browserHeader}>
-            <div className={styles.browserDots}>
-              <div className={styles.browserDot} style={{ background: '#ef4444' }} />
-              <div className={styles.browserDot} style={{ background: '#f59e0b' }} />
-              <div className={styles.browserDot} style={{ background: '#22c55e' }} />
-            </div>
-            <div className={styles.browserUrl}>
-              {brief.business_name.toLowerCase().replace(/[^a-z0-9]/g, '')}.webpro50.com
-            </div>
-            <div style={{ width: 64 }} />
-          </div>
-
-          {/* Responsive iframe shell */}
-          <div className={styles.previewShell}>
-            <div
-              className={styles.previewViewport}
-              style={{
-                width: viewWidths[viewMode],
-                maxWidth: '100%',
-                transition: 'width 0.3s ease',
-              }}
-            >
-              {hasAiHtml ? (
-                /* ── AI-generated HTML in a full iframe ── */
-                <iframe
-                  ref={iframeRef}
-                  srcDoc={generatedHtml}
-                  className={styles.previewIframe}
-                  title={`${brief.business_name} website preview`}
-                  sandbox="allow-scripts allow-same-origin allow-forms allow-popups"
-                />
-              ) : !showFallback ? (
-                /* ── AI Generation in Progress / Retrying State (instead of immediate template fallback) ── */
-                <div style={{ padding: '4rem 2rem', textAlign: 'center', background: '#f8fafc', minHeight: '600px', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', color: '#1e293b' }}>
-                  <div style={{ width: 64, height: 64, borderRadius: '50%', background: '#eff6ff', display: 'flex', alignItems: 'center', justifyContent: 'center', marginBottom: '1.5rem', boxShadow: '0 4px 20px rgba(59, 130, 246, 0.15)' }}>
-                    <Loader2 size={36} className={styles.spinnerIcon} style={{ color: '#3b82f6' }} />
-                  </div>
-                  <h3 style={{ fontSize: '1.5rem', fontWeight: 700, margin: '0 0 0.75rem' }}>
-                    ⚡ AI is Building Your Custom Website...
-                  </h3>
-                  <p style={{ maxWidth: 480, margin: '0 0 1.75rem', color: '#64748b', lineHeight: 1.6 }}>
-                    {isAutoRetrying
-                      ? 'Our AI engine is currently writing localized copy and building high-converting card layouts. We are automatically polling and retrying your design right now!'
-                      : 'If your site was interrupted by a temporary AI network rate limit, we will retry generating your custom HTML structure automatically.'}
-                  </p>
-                  <div style={{ display: 'flex', gap: '1rem', flexWrap: 'wrap', justifyContent: 'center' }}>
-                    <button
-                      className="btn btn-primary"
-                      onClick={handleRegenerate}
-                      disabled={isRegenerating || isAutoRetrying}
-                    >
-                      <RefreshCw size={16} style={{ marginRight: 8 }} />
-                      {isRegenerating || isAutoRetrying ? 'Retrying & Building Now...' : 'Retry AI Generation Now'}
-                    </button>
-                    <button
-                      className="btn btn-outline"
-                      onClick={() => setShowFallback(true)}
-                    >
-                      Show Temporary Mockup Design
-                    </button>
-                  </div>
-                </div>
-              ) : (
-                /* ── Fallback mock mockup (shown only if user explicitly clicks to view temporary mockup) ── */
-                <FallbackMockup brief={brief} palette={palette} />
-              )}
-            </div>
-          </div>
-        </div>
-
-        {/* ── Sidebar ── */}
-        <div className={styles.sidebar}>
-
-          {/* Plan card */}
-          <div className={styles.summaryCard}>
-            <h3 className={styles.summaryCardTitle}>Your Plan</h3>
-
-            <div className={styles.summaryRow}>
-              <span>Website &amp; Hosting</span>
-              <strong>$50/mo</strong>
-            </div>
-
-            {brief.google_listing_option && (
-              <div className={styles.summaryRowAddon}>
-                <CheckCircle2 size={14} className={styles.summaryAddonIcon} />
-                <span>Google listing setup — $50 one-time</span>
-              </div>
-            )}
-            {brief.branded_domain_option && (
-              <div className={styles.summaryRowAddon}>
-                <CheckCircle2 size={14} className={styles.summaryAddonIcon} />
-                <span>Extended refinement &amp; extra pages — $50 one-time</span>
-              </div>
-            )}
-
-            <div className={styles.summaryTotal}>
-              <span>Base total</span>
-              <strong>$50/mo</strong>
-            </div>
-
-            <p className={styles.summaryNote}>
-              Plus any one-time fees. No commitment until you approve.
-            </p>
-
-            <button className="btn btn-primary" style={{ width: '100%', marginTop: '1.25rem' }}>
-              Approve &amp; Continue
-            </button>
-          </div>
-
-          {/* Site features summary */}
-          <div className={styles.infoCard}>
-            <h4 className={styles.infoCardTitle}>Included in your site</h4>
-            <ul className={styles.featureList}>
-              {brief.contact_form && <li><CheckCircle2 size={14} /> Contact form</li>}
-              {brief.google_maps && <li><CheckCircle2 size={14} /> Google Maps embed</li>}
-              {brief.testimonials_on_site && <li><CheckCircle2 size={14} /> Testimonials section</li>}
-              {brief.insurance && <li><Shield size={14} /> Fully Insured badge</li>}
-              {brief.emergency_service && <li><AlertTriangle size={14} /> Emergency service callout</li>}
-              <li><CheckCircle2 size={14} /> Mobile-responsive design</li>
-              <li><CheckCircle2 size={14} /> Local SEO structure</li>
-              <li><CheckCircle2 size={14} /> Click-to-call button</li>
-            </ul>
-          </div>
-
-          {/* What's next */}
-          <div className={styles.infoCard}>
-            <h4 className={styles.infoCardTitle}>What happens next?</h4>
-            <ol className={styles.nextStepsList}>
-              <li>Approve this preview design</li>
-              <li>We connect your domain</li>
-              <li>Final review with your team</li>
-              <li>Your site goes live!</li>
-            </ol>
-          </div>
-
-        </div>
-      </div>
-
-      {/* ── Saved Sites Modal ── */}
-      {showSavedModal && (
-        <div className={styles.savedSitesModalOverlay} onClick={() => setShowSavedModal(false)}>
-          <div className={styles.savedSitesModal} onClick={e => e.stopPropagation()}>
-            <div className={styles.savedSitesHeader}>
-              <h3>📑 Your Saved Websites</h3>
-              <button className={styles.closeModalBtn} onClick={() => setShowSavedModal(false)}>
-                <X size={20} />
-              </button>
-            </div>
-            <div className={styles.savedSitesBody}>
-              {savedSites.length === 0 ? (
-                <div style={{ textAlign: 'center', padding: '2rem 1rem', color: '#6b7280' }}>
-                  <Bookmark size={36} style={{ margin: '0 auto 0.75rem', opacity: 0.5 }} />
-                  <p style={{ margin: 0, fontWeight: 600 }}>No saved sites yet.</p>
-                  <p style={{ fontSize: '0.85rem', marginTop: '0.25rem' }}>
-                    Click &quot;Save Site&quot; in the action bar to save your website for future regeneration in Next.js.
-                  </p>
-                </div>
-              ) : (
-                savedSites.map(site => (
-                  <div
-                    key={site.previewId}
-                    className={styles.savedSiteCard}
-                    onClick={() => {
-                      setShowSavedModal(false);
-                      if (site.previewId !== previewId) {
-                        window.location.href = `/preview/${site.previewId}`;
-                      }
-                    }}
-                    style={{ cursor: 'pointer' }}
-                  >
-                    <div className={styles.savedSiteInfo}>
-                      <h4>{site.business_name}</h4>
-                      <p>{site.occupation} • Saved {new Date(site.savedAt).toLocaleDateString()}</p>
-                    </div>
-                    <div className={styles.savedSiteActions}>
-                      <button
-                        className="btn btn-outline"
-                        style={{ fontSize: '12px', padding: '4px 10px' }}
-                        onClick={() => {
-                          setShowSavedModal(false);
-                          if (site.previewId !== previewId) {
-                            window.location.href = `/preview/${site.previewId}`;
-                          }
-                        }}
-                      >
-                        Open
-                      </button>
-                      <button
-                        className="btn btn-ghost"
-                        style={{ padding: '6px', color: '#ef4444' }}
-                        onClick={e => handleRemoveSavedSite(site.previewId, e)}
-                        title="Delete saved site"
-                      >
-                        <Trash2 size={16} />
-                      </button>
-                    </div>
-                  </div>
-                ))
-              )}
-            </div>
-          </div>
-        </div>
-      )}
+      {/* ── Make Changes CTA ── */}
+      <button
+        type="button"
+        className={styles.makeChangesBtn}
+        onClick={handleMakeChanges}
+      >
+        <span>Make Changes and Get Online</span>
+        <ArrowRight size={22} />
+      </button>
     </div>
   );
 }

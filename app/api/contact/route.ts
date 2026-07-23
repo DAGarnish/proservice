@@ -1,6 +1,8 @@
 import { NextResponse } from 'next/server';
-import { sendContactFormEmail } from '@/lib/email';
-import { prisma } from '@/lib/prisma';
+
+function getBackendUrl(): string {
+  return (process.env.BACKEND_API_URL || 'http://localhost:5000').replace(/\/$/, '');
+}
 
 export async function POST(request: Request) {
   try {
@@ -14,17 +16,25 @@ export async function POST(request: Request) {
       );
     }
 
-    await prisma.contactSubmission.create({
-      data: {
-        firstName: first_name,
-        lastName: last_name,
-        email: email_address,
-        phone: phone_number || null,
-        message: message,
-      }
+    // Delegate the DB write + notification email to the backend, which owns
+    // the ContactSubmission table. A failed/unreachable backend now surfaces
+    // as a real error instead of silently dropping the message.
+    const backendRes = await fetch(`${getBackendUrl()}/api/v1/contact`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ first_name, last_name, email_address, phone_number, message }),
     });
 
-    await sendContactFormEmail(first_name, last_name, email_address, phone_number || '', message);
+    const backendResult = await backendRes.json().catch(() => ({}));
+
+    if (!backendRes.ok || !backendResult.success) {
+      const errorMessage = backendResult.error || `Backend responded with status ${backendRes.status}`;
+      console.error('[PROSERVICE] Backend rejected contact submission:', errorMessage);
+      return NextResponse.json(
+        { success: false, error: errorMessage },
+        { status: backendRes.status || 502 }
+      );
+    }
 
     return NextResponse.json({ success: true });
   } catch (error: any) {
