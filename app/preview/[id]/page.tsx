@@ -420,20 +420,6 @@ export default function PreviewPage() {
               Save Site
             </button>
             <button
-              className="btn btn-outline"
-              onClick={handleRegenerate}
-              disabled={isRegenerating}
-              title="Regenerate this site with Gemini AI in Next.js"
-              style={{ borderColor: '#3b82f6', color: '#1d4ed8', background: '#eff6ff' }}
-            >
-              {isRegenerating ? <Loader2 size={14} className={styles.spinnerIcon} style={{ marginRight: 6 }} /> : <Sparkles size={14} style={{ marginRight: 6, color: '#3b82f6' }} />}
-              {isRegenerating ? 'Regenerating...' : 'Regenerate in Next.js'}
-            </button>
-            <button className="btn btn-outline" onClick={() => window.location.href = '/get-started'}>
-              <RefreshCw size={14} style={{ marginRight: 6 }} />
-              Start Over
-            </button>
-            <button 
               className="btn btn-primary"
               onClick={handlePublishSite}
               disabled={isPublishing}

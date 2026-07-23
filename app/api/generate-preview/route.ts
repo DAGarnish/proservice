@@ -77,10 +77,23 @@ export async function POST(req: NextRequest): Promise<NextResponse<GenerationRes
 
 
     // 5. Create or Update User account in database (`User` table) & Save submission
-    const verificationToken = crypto.randomUUID();
+    //
+    // IMPORTANT: If this email already has a pending (unverified) verification token,
+    // reuse it instead of minting a new one. Overwriting the token on every resubmission
+    // silently invalidates any verification email already sent, so a user clicking an
+    // earlier email link would get "Invalid or expired verification token".
+    let verificationToken = crypto.randomUUID();
     let userId: string | undefined = undefined;
 
     try {
+      const existingUser: any = await withPrismaRetry(() =>
+        (prisma as any).user.findUnique({ where: { email } })
+      );
+
+      if (existingUser && !existingUser.isEmailVerified && existingUser.verificationToken) {
+        verificationToken = existingUser.verificationToken;
+      }
+
       const userRecord: any = await withPrismaRetry(() => (prisma as any).user.upsert({
         where: { email },
         update: {
@@ -89,8 +102,9 @@ export async function POST(req: NextRequest): Promise<NextResponse<GenerationRes
           address: body.business_address || '',
           businessName: body.business_name || '',
           occupation: body.occupation || '',
-          verificationToken: verificationToken,
-          verificationSentAt: new Date(),
+          ...(existingUser?.isEmailVerified
+            ? {}
+            : { verificationToken: verificationToken, verificationSentAt: new Date() }),
         },
         create: {
           name: body.contact_name || '',

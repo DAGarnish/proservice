@@ -360,7 +360,7 @@ export async function sendUserVerificationEmail(
 
   const appUrl = getAppUrl();
   const previewUrl = `${appUrl}/preview/${previewId}`;
-  const verifyUrl = `${appUrl}/verify-email?token=${verificationToken}&previewId=${previewId}`;
+  const verifyUrl = `${appUrl}/verify-email?token=${verificationToken}&previewId=${previewId}&email=${encodeURIComponent(userEmail)}`;
 
   const subject = `✨ Verify Your Email & Access Your Website Preview — ${data.business_name}`;
 
